@@ -1,0 +1,60 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '*.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+
+- task: UseDotNet@2
+  displayName: Use .Net 7.0
+  inputs:
+    version: '7.0.x'
+    includePreviewVersions: true
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: 'build'
+    projects: '**/*.csproj'
+
+- task: DotNetCoreCLI@2
+  displayName: Test Restaurant Repository
+  inputs:
+    command: 'test'
+    projects: 'FoodDelivery.Api.Dal.IntegrationTests/*.csproj'
+    arguments: '--filter DisplayName~RestaurantRepositoryTests'
+
+- task: DotNetCoreCLI@2
+  displayName: Test Order Repository
+  inputs:
+    command: 'test'
+    projects: 'FoodDelivery.Api.Dal.IntegrationTests/*.csproj'
+    arguments: '--filter DisplayName~OrderRepositoryTests'
+
+- task: DotNetCoreCLI@2
+  displayName: Test Food Repository
+  inputs:
+    command: 'test'
+    projects: 'FoodDelivery.Api.Dal.IntegrationTests/*.csproj'
+    arguments: '--filter DisplayName~FoodRepositoryTests'
+
+- task: DotNetCoreCLI@2
+  displayName: Test End to End
+  inputs:
+    command: 'test'
+    projects: 'FoodDelivery.Api.App.EndToEndTests/*.csproj'
+  env:
+    ConnectionStrings__DefaultConnection: $(ConnectionStringForTesting)

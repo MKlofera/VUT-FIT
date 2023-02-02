@@ -1,0 +1,91 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>WinExe</OutputType>
+		<TargetFramework>net6.0-windows</TargetFramework>
+		<Nullable>enable</Nullable>
+		<UseWPF>true</UseWPF>
+		<PackageIcon>icon.ico</PackageIcon>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Remove="icon.ico" />
+		<None Remove="Views\img\calendar.svg" />
+		<None Remove="Views\img\clock.svg" />
+		<None Remove="Views\img\driving_wheel.svg" />
+		<None Remove="Views\img\edit.svg" />
+		<None Remove="Views\img\eye.svg" />
+		<None Remove="Views\img\minus.svg" />
+		<None Remove="Views\img\no_img.png" />
+		<None Remove="Views\img\off.svg" />
+		<None Remove="Views\img\plus.svg" />
+		<None Remove="Views\img\profile1.svg" />
+		<None Remove="Views\img\profile2.svg" />
+		<None Remove="Views\img\SeeSharp.gif" />
+		<None Remove="Views\img\trash.svg" />
+		<None Remove="Views\img\users.svg" />
+		<None Remove="Views\img\user_add.svg" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<Resource Include="icon.ico">
+		  <Pack>True</Pack>
+		  <PackagePath>\</PackagePath>
+		</Resource>
+		<Resource Include="Views\img\calendar.svg" />
+		<Resource Include="Views\img\clock.svg" />
+		<Resource Include="Views\img\driving_wheel.svg" />
+		<Resource Include="Views\img\edit.svg" />
+		<Resource Include="Views\img\eye.svg" />
+		<Resource Include="Views\img\minus.svg" />
+		<Resource Include="Views\img\no_img.png" />
+		<Resource Include="Views\img\off.svg" />
+		<Resource Include="Views\img\plus.svg" />
+		<Resource Include="Views\img\profile1.svg" />
+		<Resource Include="Views\img\profile2.svg" />
+		<Resource Include="Views\img\SeeSharp.gif" />
+		<Resource Include="Views\img\trash.svg" />
+		<Resource Include="Views\img\users.svg" />
+		<Resource Include="Views\img\user_add.svg" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="DotNetProjects.Extended.Wpf.Toolkit" Version="5.0.103" />
+		<PackageReference Include="MaterialDesignThemes" Version="4.5.0" />
+		<PackageReference Include="Microsoft.AspNetCore.Hosting" Version="2.2.7" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.5">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
+		<PackageReference Include="Microsoft.Extensions.Options" Version="6.0.0" />
+		<PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
+		<PackageReference Include="Microsoft.Xaml.Behaviors.Wpf" Version="1.1.39" />
+		<PackageReference Include="PropertyChanged.Fody" Version="3.4.0" />
+		<PackageReference Include="SharpVectors" Version="1.7.7" />
+		<PackageReference Include="WpfAnimatedGif" Version="2.0.2" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\ICS.BL\ICS.BL.csproj" />
+		<ProjectReference Include="..\ICS.Common\ICS.Common.csproj" />
+		<ProjectReference Include="..\ICS.DAL\ICS.DAL.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="AppSettings.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Page Update="Views\CarDetailWindow.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	    <SubType>Designer</SubType>
+	  </Page>
+	  <Page Update="Views\RideListBrowseView.xaml">
+	    <XamlRuntime>$(DefaultXamlRuntime)</XamlRuntime>
+	  </Page>
+	</ItemGroup>
+
+</Project>

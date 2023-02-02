@@ -1,0 +1,1364 @@
+Index: FoodDelivery.Web.App/Pages/ShoppingCartPage.razor
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Pages/ShoppingCartPage.razor b/FoodDelivery.Web.App/Pages/ShoppingCartPage.razor
+new file mode 100644
+--- /dev/null	(date 1670704477000)
++++ b/FoodDelivery.Web.App/Pages/ShoppingCartPage.razor	(date 1670704477000)
+@@ -0,0 +1,48 @@
++@page "/shoppingCart"
++@using Microsoft.AspNetCore.Components.Forms
++@using Microsoft.Extensions.Localization
++@using FoodDelivery.Web.App.Resources
++@inject IStringLocalizer<ShoppingCartPageResources> PageLocalizer
++@inject Blazored.LocalStorage.ILocalStorageService localStorage
++
++
++
++@* ----------------------------------- SHOPPING CART TITLE ----------------------------------- *@
++<section class="PageTitle">
++    <div class="d-flex justify-content-between">
++        <h1>@PageLocalizer["CartTitle"]</h1>
++        <button class="btn btn-danger" @onclick="() => {DeleteWholeCart();}">@PageLocalizer["DeleteWholeCart"]</button>
++    </div>
++</section>
++
++
++@* ----------------------------------- SHOPPING CART CONTENT ----------------------------------- *@
++<section class="ShoppingCartContent mt-4">
++    @foreach (var order in Orders)
++    {
++        <div class="d-flex justify-content-between">
++            <h6><a href="/foods/@order.FoodId">@order.FoodName</a> - @order.Quantity x</h6>
++            <button class="btn btn-danger" @onclick="() => {DeleteItem(order); }">@PageLocalizer["DeleteItemCart"]</button>
++        </div>
++        <p>@order.Note</p>
++    }
++</section>
++
++@* ----------------------------------- SHOPPING CART FORM ----------------------------------- *@
++<section class="ShoppingCartPage_Form row">
++    <EditForm Model="NewOrder">
++        <div class="form-group">
++            <label>@PageLocalizer["InputName"]</label>
++            <InputTextArea @bind-Value="@NewOrder.Name" class="form-control" placeholder="@PageLocalizer["InputNamePlaceholder"]" />
++        </div>
++        <div class="form-group">
++            <label>@PageLocalizer["InputAddress"]</label>
++            <InputTextArea @bind-Value="@NewOrder.Address" class="form-control" placeholder="@PageLocalizer["InputAddressPlaceholder"]" />
++        </div>
++        <div class="form-group">
++            <label>@PageLocalizer["InputDescription"]</label>
++            <InputTextArea @bind-Value="@NewOrder.Description" class="form-control" placeholder="@PageLocalizer["InputDescriptionPlaceholder"]" />
++        </div>
++    </EditForm>
++    <button class="btn btn-success" @onclick="() => {CreateOrder();}">@PageLocalizer["CreateOrder"]</button>
++</section>
+Index: FoodDelivery.Web.App/Resources/ShoppingCartPageResources.cs.resx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.cs.resx b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.cs.resx
+new file mode 100644
+--- /dev/null	(date 1670704104990)
++++ b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.cs.resx	(date 1670704104990)
+@@ -0,0 +1,150 @@
++<?xml version="1.0" encoding="utf-8"?>
++<root>
++  <!-- 
++    Microsoft ResX Schema 
++    
++    Version 2.0
++    
++    The primary goals of this format is to allow a simple XML format 
++    that is mostly human readable. The generation and parsing of the 
++    various data types are done through the TypeConverter classes 
++    associated with the data types.
++    
++    Example:
++    
++    ... ado.net/XML headers & schema ...
++    <resheader name="resmimetype">text/microsoft-resx</resheader>
++    <resheader name="version">2.0</resheader>
++    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
++    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
++    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
++    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
++    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
++        <value>[base64 mime encoded serialized .NET Framework object]</value>
++    </data>
++    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
++        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
++        <comment>This is a comment</comment>
++    </data>
++                
++    There are any number of "resheader" rows that contain simple 
++    name/value pairs.
++    
++    Each data row contains a name, and value. The row also contains a 
++    type or mimetype. Type corresponds to a .NET class that support 
++    text/value conversion through the TypeConverter architecture. 
++    Classes that don't support this are serialized and stored with the 
++    mimetype set.
++    
++    The mimetype is used for serialized objects, and tells the 
++    ResXResourceReader how to depersist the object. This is currently not 
++    extensible. For a given mimetype the value must be set accordingly:
++    
++    Note - application/x-microsoft.net.object.binary.base64 is the format 
++    that the ResXResourceWriter will generate, however the reader can 
++    read any of the formats listed below.
++    
++    mimetype: application/x-microsoft.net.object.binary.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
++            : and then encoded with base64 encoding.
++    
++    mimetype: application/x-microsoft.net.object.soap.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
++            : and then encoded with base64 encoding.
++
++    mimetype: application/x-microsoft.net.object.bytearray.base64
++    value   : The object must be serialized into a byte array 
++            : using a System.ComponentModel.TypeConverter
++            : and then encoded with base64 encoding.
++    -->
++  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
++    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
++    <xsd:element name="root" msdata:IsDataSet="true">
++      <xsd:complexType>
++        <xsd:choice maxOccurs="unbounded">
++          <xsd:element name="metadata">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" />
++              </xsd:sequence>
++              <xsd:attribute name="name" use="required" type="xsd:string" />
++              <xsd:attribute name="type" type="xsd:string" />
++              <xsd:attribute name="mimetype" type="xsd:string" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="assembly">
++            <xsd:complexType>
++              <xsd:attribute name="alias" type="xsd:string" />
++              <xsd:attribute name="name" type="xsd:string" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="data">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
++              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
++              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="resheader">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" />
++            </xsd:complexType>
++          </xsd:element>
++        </xsd:choice>
++      </xsd:complexType>
++    </xsd:element>
++  </xsd:schema>
++  <resheader name="resmimetype">
++    <value>text/microsoft-resx</value>
++  </resheader>
++  <resheader name="version">
++    <value>2.0</value>
++  </resheader>
++  <resheader name="reader">
++    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <resheader name="writer">
++    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <data name="CartTitle" xml:space="preserve">
++    <value>Košík</value>
++  </data>
++  <data name="DeleteWholeCart" xml:space="preserve">
++    <value>Vyprázdnit košík</value>
++  </data>
++  <data name="DeleteItemCart" xml:space="preserve">
++    <value>Smazat ks</value>
++  </data>
++  <data name="InputName" xml:space="preserve">
++    <value>Jméno</value>
++  </data>
++  <data name="InputAddress" xml:space="preserve">
++    <value>Adresa</value>
++  </data>
++  <data name="InputDescription" xml:space="preserve">
++    <value>Poznámka</value>
++  </data>
++  <data name="InputDescriptionPlaceholder" xml:space="preserve">
++    <value>Co nejdříve</value>
++  </data>
++  <data name="InputAddressPlaceholder" xml:space="preserve">
++    <value>Pekařská 12</value>
++  </data>
++  <data name="InputNamePlaceholder" xml:space="preserve">
++    <value>Jan Novák</value>
++  </data>
++  <data name="CreateOrder" xml:space="preserve">
++    <value>Vytvořit objednávku</value>
++  </data>
++</root>
+\ No newline at end of file
+Index: FoodDelivery.Web.App/Resources/ShoppingCartPageResources.en.resx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.en.resx b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.en.resx
+new file mode 100644
+--- /dev/null	(date 1670704104988)
++++ b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.en.resx	(date 1670704104988)
+@@ -0,0 +1,150 @@
++<?xml version="1.0" encoding="utf-8"?>
++<root>
++  <!-- 
++    Microsoft ResX Schema 
++    
++    Version 2.0
++    
++    The primary goals of this format is to allow a simple XML format 
++    that is mostly human readable. The generation and parsing of the 
++    various data types are done through the TypeConverter classes 
++    associated with the data types.
++    
++    Example:
++    
++    ... ado.net/XML headers & schema ...
++    <resheader name="resmimetype">text/microsoft-resx</resheader>
++    <resheader name="version">2.0</resheader>
++    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
++    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
++    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
++    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
++    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
++        <value>[base64 mime encoded serialized .NET Framework object]</value>
++    </data>
++    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
++        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
++        <comment>This is a comment</comment>
++    </data>
++                
++    There are any number of "resheader" rows that contain simple 
++    name/value pairs.
++    
++    Each data row contains a name, and value. The row also contains a 
++    type or mimetype. Type corresponds to a .NET class that support 
++    text/value conversion through the TypeConverter architecture. 
++    Classes that don't support this are serialized and stored with the 
++    mimetype set.
++    
++    The mimetype is used for serialized objects, and tells the 
++    ResXResourceReader how to depersist the object. This is currently not 
++    extensible. For a given mimetype the value must be set accordingly:
++    
++    Note - application/x-microsoft.net.object.binary.base64 is the format 
++    that the ResXResourceWriter will generate, however the reader can 
++    read any of the formats listed below.
++    
++    mimetype: application/x-microsoft.net.object.binary.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
++            : and then encoded with base64 encoding.
++    
++    mimetype: application/x-microsoft.net.object.soap.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
++            : and then encoded with base64 encoding.
++
++    mimetype: application/x-microsoft.net.object.bytearray.base64
++    value   : The object must be serialized into a byte array 
++            : using a System.ComponentModel.TypeConverter
++            : and then encoded with base64 encoding.
++    -->
++  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
++    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
++    <xsd:element name="root" msdata:IsDataSet="true">
++      <xsd:complexType>
++        <xsd:choice maxOccurs="unbounded">
++          <xsd:element name="metadata">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" />
++              </xsd:sequence>
++              <xsd:attribute name="name" use="required" type="xsd:string" />
++              <xsd:attribute name="type" type="xsd:string" />
++              <xsd:attribute name="mimetype" type="xsd:string" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="assembly">
++            <xsd:complexType>
++              <xsd:attribute name="alias" type="xsd:string" />
++              <xsd:attribute name="name" type="xsd:string" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="data">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
++              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
++              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="resheader">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" />
++            </xsd:complexType>
++          </xsd:element>
++        </xsd:choice>
++      </xsd:complexType>
++    </xsd:element>
++  </xsd:schema>
++  <resheader name="resmimetype">
++    <value>text/microsoft-resx</value>
++  </resheader>
++  <resheader name="version">
++    <value>2.0</value>
++  </resheader>
++  <resheader name="reader">
++    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <resheader name="writer">
++    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <data name="CartTitle" xml:space="preserve">
++    <value>Shopping Cart</value>
++  </data>
++  <data name="DeleteWholeCart" xml:space="preserve">
++    <value>Delete whole cart</value>
++  </data>
++  <data name="DeleteItemCart" xml:space="preserve">
++    <value>Delete item</value>
++  </data>
++  <data name="InputName" xml:space="preserve">
++    <value>Name</value>
++  </data>
++  <data name="InputAddress" xml:space="preserve">
++    <value>Address</value>
++  </data>
++  <data name="InputDescription" xml:space="preserve">
++    <value>Description</value>
++  </data>
++  <data name="InputDescriptionPlaceholder" xml:space="preserve">
++    <value>ASAP</value>
++  </data>
++  <data name="InputAddressPlaceholder" xml:space="preserve">
++    <value>Baker street 127</value>
++  </data>
++  <data name="InputNamePlaceholder" xml:space="preserve">
++    <value>Joe Doe</value>
++  </data>
++  <data name="CreateOrder" xml:space="preserve">
++    <value>Create order</value>
++  </data>
++</root>
+\ No newline at end of file
+Index: FoodDelivery.Common.Models/Models/ShoppingCartItemModel.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Common.Models/Models/ShoppingCartItemModel.cs b/FoodDelivery.Common.Models/Models/ShoppingCartItemModel.cs
+new file mode 100644
+--- /dev/null	(date 1670677423405)
++++ b/FoodDelivery.Common.Models/Models/ShoppingCartItemModel.cs	(date 1670677423405)
+@@ -0,0 +1,33 @@
++using Guid = System.Guid;
++
++namespace FoodDelivery.Common.Models.Models;
++
++public record ShoppingCartItemModel
++{
++    public string Note { get; set; }
++    public Guid ResutarntId { get; set; }
++    public string RestaurantName { get; set; }
++    public Guid FoodId { get; set; }
++    public string FoodName { get; set; }
++    public int Quantity { get; set; }
++
++    public ShoppingCartItemModel(string note, Guid resutarntId, string restaurantName, Guid foodId, string foodName, int quantity)
++    {
++        Note = note;
++        ResutarntId = resutarntId;
++        RestaurantName = restaurantName;
++        FoodId = foodId;
++        FoodName = foodName;
++        Quantity = quantity;
++    }
++
++    public ShoppingCartItemModel()
++    {
++        Note = string.Empty;
++        ResutarntId = Guid.Empty;
++        RestaurantName = string.Empty;
++        FoodId = Guid.Empty;
++        FoodName = string.Empty;
++        Quantity = 0;
++    }
++}
+\ No newline at end of file
+Index: FoodDelivery.Web.App/Pages/ShoppingCartPage.razor.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Pages/ShoppingCartPage.razor.cs b/FoodDelivery.Web.App/Pages/ShoppingCartPage.razor.cs
+new file mode 100644
+--- /dev/null	(date 1670706805516)
++++ b/FoodDelivery.Web.App/Pages/ShoppingCartPage.razor.cs	(date 1670706805516)
+@@ -0,0 +1,90 @@
++using FoodDelivery.Common.Enums;
++using FoodDelivery.Common.Models.Models;
++using FoodDelivery.Common.Models.Models.Food;
++using FoodDelivery.Common.Models.Models.FoodOrderNote;
++using FoodDelivery.Common.Models.Models.Order;
++using FoodDelivery.Common.Models.Models.Restaurant;
++using FoodDelivery.Web.BL.Facades;
++using Microsoft.AspNetCore.Components;
++using System.Numerics;
++
++namespace FoodDelivery.Web.App.Pages;
++
++public partial class ShoppingCartPage
++{
++    List<ShoppingCartItemModel> Orders = new List<ShoppingCartItemModel>();
++
++    [Inject] 
++    private OrderFacade OrderFacade { get; set; } = null!;
++
++    [Inject]
++    private NavigationManager navigationManager { get; set; } = null!;
++
++    private OrderDetailModel NewOrder = new OrderDetailModel();
++
++    protected override async Task OnInitializedAsync()
++    {
++        Orders = await localStorage.GetItemAsync<List<ShoppingCartItemModel>>("ShoppingCart");
++        await base.OnInitializedAsync();
++    }
++
++    /**
++     * This method is called when the user clicks on the "Order" button.
++     * It creates a new order and redirects the user to the "OrderDetailPage".
++     */
++    private async void DeleteItem(ShoppingCartItemModel selectedOrder)
++    {
++        if (selectedOrder.Quantity > 1)
++        {
++            foreach (var order in Orders)
++            {
++                if (order.FoodId == selectedOrder.FoodId && order.Note == selectedOrder.Note)
++                {
++                    order.Quantity--;
++                }
++            }
++        }
++        else
++        {
++            Orders.RemoveAll(x => x.FoodId == selectedOrder.FoodId);
++        }
++        await localStorage.SetItemAsync("ShoppingCart", Orders);
++    }
++
++    /**
++     * This method is called when the user clicks on the "Delete whole cart" button.
++     * It creates a new order and redirects the user to the "OrderDetail" page.
++     */
++    private async void DeleteWholeCart()
++    {
++        Orders.Clear();
++        await localStorage.SetItemAsync("ShoppingCart", Orders);
++    }
++
++
++    /**
++     * @brief Creates new order with selected foods and sends it to server
++     */
++    private async void CreateOrder()
++    {
++        NewOrder.CreatedDate = DateTime.Now;
++        NewOrder.OrderState = OrderState.Ordered;
++        NewOrder.RestaurantId = Orders[0].ResutarntId;
++
++        foreach (var order in Orders)
++        {
++            // tohle je hrozný ale už nechci měnit db schéma
++            for (int i = 0; i < order.Quantity; i++)
++            {
++                FoodOrderNoteListModel foodOrderNote = new(Guid.NewGuid(), order.Note, order.FoodId, order.FoodName, NewOrder.Id);
++                NewOrder.FoodOrderNotes.Add(foodOrderNote);
++            }
++        }
++        await OrderFacade.InsertOrdersAsync(NewOrder);
++
++        DeleteWholeCart();
++
++        navigationManager.NavigateTo($"/restaurants");
++
++    }
++}
+Index: FoodDelivery.Web.App/Resources/ShoppingCartPageResources.resx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.resx b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.resx
+new file mode 100644
+--- /dev/null	(date 1670704104992)
++++ b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.resx	(date 1670704104992)
+@@ -0,0 +1,130 @@
++<?xml version="1.0" encoding="utf-8"?>
++<root>
++  <!-- 
++		Microsoft ResX Schema
++
++		Version 1.3
++
++		The primary goals of this format is to allow a simple XML format 
++		that is mostly human readable. The generation and parsing of the 
++		various data types are done through the TypeConverter classes 
++		associated with the data types.
++
++		Example:
++
++		... ado.net/XML headers & schema ...
++		<resheader name="resmimetype">text/microsoft-resx</resheader>
++		<resheader name="version">1.3</resheader>
++		<resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
++		<resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
++		<data name="Name1">this is my long string</data>
++		<data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
++		<data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
++			[base64 mime encoded serialized .NET Framework object]
++		</data>
++		<data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
++			[base64 mime encoded string representing a byte array form of the .NET Framework object]
++		</data>
++
++		There are any number of "resheader" rows that contain simple 
++		name/value pairs.
++
++		Each data row contains a name, and value. The row also contains a 
++		type or mimetype. Type corresponds to a .NET class that support 
++		text/value conversion through the TypeConverter architecture. 
++		Classes that don't support this are serialized and stored with the 
++		mimetype set.
++
++		The mimetype is used for serialized objects, and tells the 
++		ResXResourceReader how to depersist the object. This is currently not 
++		extensible. For a given mimetype the value must be set accordingly:
++
++		Note - application/x-microsoft.net.object.binary.base64 is the format 
++		that the ResXResourceWriter will generate, however the reader can 
++		read any of the formats listed below.
++
++		mimetype: application/x-microsoft.net.object.binary.base64
++		value   : The object must be serialized with 
++			: System.Serialization.Formatters.Binary.BinaryFormatter
++			: and then encoded with base64 encoding.
++
++		mimetype: application/x-microsoft.net.object.soap.base64
++		value   : The object must be serialized with 
++			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
++			: and then encoded with base64 encoding.
++
++		mimetype: application/x-microsoft.net.object.bytearray.base64
++		value   : The object must be serialized into a byte array 
++			: using a System.ComponentModel.TypeConverter
++			: and then encoded with base64 encoding.
++	-->
++  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
++    <xsd:element name="root" msdata:IsDataSet="true">
++      <xsd:complexType>
++        <xsd:choice maxOccurs="unbounded">
++          <xsd:element name="data">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
++              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
++              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="resheader">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" />
++            </xsd:complexType>
++          </xsd:element>
++        </xsd:choice>
++      </xsd:complexType>
++    </xsd:element>
++  </xsd:schema>
++  <resheader name="resmimetype">
++    <value>text/microsoft-resx</value>
++  </resheader>
++  <resheader name="version">
++    <value>1.3</value>
++  </resheader>
++  <resheader name="reader">
++    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <resheader name="writer">
++    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <data name="CartTitle" xml:space="preserve">
++    <value>Shopping cart</value>
++  </data>
++  <data name="DeleteWholeCart" xml:space="preserve">
++    <value>Delete whole cart</value>
++  </data>
++  <data name="DeleteItemCart" xml:space="preserve">
++    <value>Delete item</value>
++  </data>
++  <data name="InputName" xml:space="preserve">
++    <value>Name</value>
++  </data>
++  <data name="InputAddress" xml:space="preserve">
++    <value>Address</value>
++  </data>
++  <data name="InputDescription" xml:space="preserve">
++    <value>Description</value>
++  </data>
++  <data name="InputDescriptionPlaceholder" xml:space="preserve">
++    <value>ASAP</value>
++  </data>
++  <data name="InputAddressPlaceholder" xml:space="preserve">
++    <value>Baker street 128</value>
++  </data>
++  <data name="InputNamePlaceholder" xml:space="preserve">
++    <value>Joe Doe</value>
++  </data>
++  <data name="CreateOrder" xml:space="preserve">
++    <value>Create order</value>
++  </data>
++</root>
+\ No newline at end of file
+Index: FoodDelivery.Web.App/Resources/NavMenuComponentResources.resx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/NavMenuComponentResources.resx b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.resx
+new file mode 100644
+--- /dev/null	(date 1670700450486)
++++ b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.resx	(date 1670700450486)
+@@ -0,0 +1,115 @@
++<?xml version="1.0" encoding="utf-8"?>
++<root>
++  <!-- 
++		Microsoft ResX Schema
++
++		Version 1.3
++
++		The primary goals of this format is to allow a simple XML format 
++		that is mostly human readable. The generation and parsing of the 
++		various data types are done through the TypeConverter classes 
++		associated with the data types.
++
++		Example:
++
++		... ado.net/XML headers & schema ...
++		<resheader name="resmimetype">text/microsoft-resx</resheader>
++		<resheader name="version">1.3</resheader>
++		<resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
++		<resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
++		<data name="Name1">this is my long string</data>
++		<data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
++		<data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
++			[base64 mime encoded serialized .NET Framework object]
++		</data>
++		<data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
++			[base64 mime encoded string representing a byte array form of the .NET Framework object]
++		</data>
++
++		There are any number of "resheader" rows that contain simple 
++		name/value pairs.
++
++		Each data row contains a name, and value. The row also contains a 
++		type or mimetype. Type corresponds to a .NET class that support 
++		text/value conversion through the TypeConverter architecture. 
++		Classes that don't support this are serialized and stored with the 
++		mimetype set.
++
++		The mimetype is used for serialized objects, and tells the 
++		ResXResourceReader how to depersist the object. This is currently not 
++		extensible. For a given mimetype the value must be set accordingly:
++
++		Note - application/x-microsoft.net.object.binary.base64 is the format 
++		that the ResXResourceWriter will generate, however the reader can 
++		read any of the formats listed below.
++
++		mimetype: application/x-microsoft.net.object.binary.base64
++		value   : The object must be serialized with 
++			: System.Serialization.Formatters.Binary.BinaryFormatter
++			: and then encoded with base64 encoding.
++
++		mimetype: application/x-microsoft.net.object.soap.base64
++		value   : The object must be serialized with 
++			: System.Runtime.Serialization.Formatters.Soap.SoapFormatter
++			: and then encoded with base64 encoding.
++
++		mimetype: application/x-microsoft.net.object.bytearray.base64
++		value   : The object must be serialized into a byte array 
++			: using a System.ComponentModel.TypeConverter
++			: and then encoded with base64 encoding.
++	-->
++  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
++    <xsd:element name="root" msdata:IsDataSet="true">
++      <xsd:complexType>
++        <xsd:choice maxOccurs="unbounded">
++          <xsd:element name="data">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" msdata:Ordinal="1" />
++              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
++              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="resheader">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" />
++            </xsd:complexType>
++          </xsd:element>
++        </xsd:choice>
++      </xsd:complexType>
++    </xsd:element>
++  </xsd:schema>
++  <resheader name="resmimetype">
++    <value>text/microsoft-resx</value>
++  </resheader>
++  <resheader name="version">
++    <value>1.3</value>
++  </resheader>
++  <resheader name="reader">
++    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <resheader name="writer">
++    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.3500.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <data name="Home" xml:space="preserve">
++    <value>Home</value>
++  </data>
++  <data name="Restaurants" xml:space="preserve">
++    <value>Restaurants</value>
++  </data>
++  <data name="Orders" xml:space="preserve">
++    <value>Orders</value>
++  </data>
++  <data name="Search" xml:space="preserve">
++    <value>Search</value>
++  </data>
++  <data name="ShoppingCart" xml:space="preserve">
++    <value>Cart</value>
++  </data>
++</root>
+\ No newline at end of file
+Index: FoodDelivery.Web.App/Resources/ShoppingCartPageResources.Designer.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.Designer.cs b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.Designer.cs
+new file mode 100644
+--- /dev/null	(date 1670704105040)
++++ b/FoodDelivery.Web.App/Resources/ShoppingCartPageResources.Designer.cs	(date 1670704105040)
+@@ -0,0 +1,153 @@
++//------------------------------------------------------------------------------
++// <auto-generated>
++//     This code was generated by a tool.
++//     Runtime Version:4.0.30319.42000
++//
++//     Changes to this file may cause incorrect behavior and will be lost if
++//     the code is regenerated.
++// </auto-generated>
++//------------------------------------------------------------------------------
++
++namespace FoodDelivery.Web.App.Resources {
++    using System;
++    
++    
++    /// <summary>
++    ///   A strongly-typed resource class, for looking up localized strings, etc.
++    /// </summary>
++    // This class was auto-generated by the StronglyTypedResourceBuilder
++    // class via a tool like ResGen or Visual Studio.
++    // To add or remove a member, edit your .ResX file then rerun ResGen
++    // with the /str option, or rebuild your VS project.
++    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
++    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
++    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
++    public class ShoppingCartPageResources {
++        
++        private static global::System.Resources.ResourceManager resourceMan;
++        
++        private static global::System.Globalization.CultureInfo resourceCulture;
++        
++        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
++        internal ShoppingCartPageResources() {
++        }
++        
++        /// <summary>
++        ///   Returns the cached ResourceManager instance used by this class.
++        /// </summary>
++        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
++        public static global::System.Resources.ResourceManager ResourceManager {
++            get {
++                if (object.ReferenceEquals(resourceMan, null)) {
++                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("FoodDelivery.Web.App.Resources.ShoppingCartPageResources", typeof(ShoppingCartPageResources).Assembly);
++                    resourceMan = temp;
++                }
++                return resourceMan;
++            }
++        }
++        
++        /// <summary>
++        ///   Overrides the current thread's CurrentUICulture property for all
++        ///   resource lookups using this strongly typed resource class.
++        /// </summary>
++        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
++        public static global::System.Globalization.CultureInfo Culture {
++            get {
++                return resourceCulture;
++            }
++            set {
++                resourceCulture = value;
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Shopping cart.
++        /// </summary>
++        public static string CartTitle {
++            get {
++                return ResourceManager.GetString("CartTitle", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Create order.
++        /// </summary>
++        public static string CreateOrder {
++            get {
++                return ResourceManager.GetString("CreateOrder", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Delete item.
++        /// </summary>
++        public static string DeleteItemCart {
++            get {
++                return ResourceManager.GetString("DeleteItemCart", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Delete whole cart.
++        /// </summary>
++        public static string DeleteWholeCart {
++            get {
++                return ResourceManager.GetString("DeleteWholeCart", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Address.
++        /// </summary>
++        public static string InputAddress {
++            get {
++                return ResourceManager.GetString("InputAddress", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Baker street 128.
++        /// </summary>
++        public static string InputAddressPlaceholder {
++            get {
++                return ResourceManager.GetString("InputAddressPlaceholder", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Description.
++        /// </summary>
++        public static string InputDescription {
++            get {
++                return ResourceManager.GetString("InputDescription", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to ASAP.
++        /// </summary>
++        public static string InputDescriptionPlaceholder {
++            get {
++                return ResourceManager.GetString("InputDescriptionPlaceholder", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Name.
++        /// </summary>
++        public static string InputName {
++            get {
++                return ResourceManager.GetString("InputName", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Joe Doe.
++        /// </summary>
++        public static string InputNamePlaceholder {
++            get {
++                return ResourceManager.GetString("InputNamePlaceholder", resourceCulture);
++            }
++        }
++    }
++}
+Index: FoodDelivery.Web.App/Resources/NavMenuComponentResources.Designer.cs
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/NavMenuComponentResources.Designer.cs b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.Designer.cs
+new file mode 100644
+--- /dev/null	(date 1670700450525)
++++ b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.Designer.cs	(date 1670700450525)
+@@ -0,0 +1,108 @@
++//------------------------------------------------------------------------------
++// <auto-generated>
++//     This code was generated by a tool.
++//     Runtime Version:4.0.30319.42000
++//
++//     Changes to this file may cause incorrect behavior and will be lost if
++//     the code is regenerated.
++// </auto-generated>
++//------------------------------------------------------------------------------
++
++namespace FoodDelivery.Web.App.Resources {
++    using System;
++    
++    
++    /// <summary>
++    ///   A strongly-typed resource class, for looking up localized strings, etc.
++    /// </summary>
++    // This class was auto-generated by the StronglyTypedResourceBuilder
++    // class via a tool like ResGen or Visual Studio.
++    // To add or remove a member, edit your .ResX file then rerun ResGen
++    // with the /str option, or rebuild your VS project.
++    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
++    [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
++    [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
++    public class NavMenuComponentResources {
++        
++        private static global::System.Resources.ResourceManager resourceMan;
++        
++        private static global::System.Globalization.CultureInfo resourceCulture;
++        
++        [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
++        internal NavMenuComponentResources() {
++        }
++        
++        /// <summary>
++        ///   Returns the cached ResourceManager instance used by this class.
++        /// </summary>
++        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
++        public static global::System.Resources.ResourceManager ResourceManager {
++            get {
++                if (object.ReferenceEquals(resourceMan, null)) {
++                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("FoodDelivery.Web.App.Resources.NavMenuComponentResources", typeof(NavMenuComponentResources).Assembly);
++                    resourceMan = temp;
++                }
++                return resourceMan;
++            }
++        }
++        
++        /// <summary>
++        ///   Overrides the current thread's CurrentUICulture property for all
++        ///   resource lookups using this strongly typed resource class.
++        /// </summary>
++        [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
++        public static global::System.Globalization.CultureInfo Culture {
++            get {
++                return resourceCulture;
++            }
++            set {
++                resourceCulture = value;
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Home.
++        /// </summary>
++        public static string Home {
++            get {
++                return ResourceManager.GetString("Home", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Orders.
++        /// </summary>
++        public static string Orders {
++            get {
++                return ResourceManager.GetString("Orders", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Restaurants.
++        /// </summary>
++        public static string Restaurants {
++            get {
++                return ResourceManager.GetString("Restaurants", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Search.
++        /// </summary>
++        public static string Search {
++            get {
++                return ResourceManager.GetString("Search", resourceCulture);
++            }
++        }
++        
++        /// <summary>
++        ///   Looks up a localized string similar to Cart.
++        /// </summary>
++        public static string ShoppingCart {
++            get {
++                return ResourceManager.GetString("ShoppingCart", resourceCulture);
++            }
++        }
++    }
++}
+Index: FoodDelivery.Web.App/Resources/NavMenuComponentResources.en.resx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/NavMenuComponentResources.en.resx b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.en.resx
+new file mode 100644
+--- /dev/null	(date 1670700450482)
++++ b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.en.resx	(date 1670700450482)
+@@ -0,0 +1,135 @@
++<?xml version="1.0" encoding="utf-8"?>
++<root>
++  <!-- 
++    Microsoft ResX Schema 
++    
++    Version 2.0
++    
++    The primary goals of this format is to allow a simple XML format 
++    that is mostly human readable. The generation and parsing of the 
++    various data types are done through the TypeConverter classes 
++    associated with the data types.
++    
++    Example:
++    
++    ... ado.net/XML headers & schema ...
++    <resheader name="resmimetype">text/microsoft-resx</resheader>
++    <resheader name="version">2.0</resheader>
++    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
++    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
++    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
++    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
++    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
++        <value>[base64 mime encoded serialized .NET Framework object]</value>
++    </data>
++    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
++        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
++        <comment>This is a comment</comment>
++    </data>
++                
++    There are any number of "resheader" rows that contain simple 
++    name/value pairs.
++    
++    Each data row contains a name, and value. The row also contains a 
++    type or mimetype. Type corresponds to a .NET class that support 
++    text/value conversion through the TypeConverter architecture. 
++    Classes that don't support this are serialized and stored with the 
++    mimetype set.
++    
++    The mimetype is used for serialized objects, and tells the 
++    ResXResourceReader how to depersist the object. This is currently not 
++    extensible. For a given mimetype the value must be set accordingly:
++    
++    Note - application/x-microsoft.net.object.binary.base64 is the format 
++    that the ResXResourceWriter will generate, however the reader can 
++    read any of the formats listed below.
++    
++    mimetype: application/x-microsoft.net.object.binary.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
++            : and then encoded with base64 encoding.
++    
++    mimetype: application/x-microsoft.net.object.soap.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
++            : and then encoded with base64 encoding.
++
++    mimetype: application/x-microsoft.net.object.bytearray.base64
++    value   : The object must be serialized into a byte array 
++            : using a System.ComponentModel.TypeConverter
++            : and then encoded with base64 encoding.
++    -->
++  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
++    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
++    <xsd:element name="root" msdata:IsDataSet="true">
++      <xsd:complexType>
++        <xsd:choice maxOccurs="unbounded">
++          <xsd:element name="metadata">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" />
++              </xsd:sequence>
++              <xsd:attribute name="name" use="required" type="xsd:string" />
++              <xsd:attribute name="type" type="xsd:string" />
++              <xsd:attribute name="mimetype" type="xsd:string" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="assembly">
++            <xsd:complexType>
++              <xsd:attribute name="alias" type="xsd:string" />
++              <xsd:attribute name="name" type="xsd:string" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="data">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
++              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
++              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="resheader">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" />
++            </xsd:complexType>
++          </xsd:element>
++        </xsd:choice>
++      </xsd:complexType>
++    </xsd:element>
++  </xsd:schema>
++  <resheader name="resmimetype">
++    <value>text/microsoft-resx</value>
++  </resheader>
++  <resheader name="version">
++    <value>2.0</value>
++  </resheader>
++  <resheader name="reader">
++    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <resheader name="writer">
++    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <data name="Home" xml:space="preserve">
++    <value>Home</value>
++  </data>
++  <data name="Restaurants" xml:space="preserve">
++    <value>Restaurants</value>
++  </data>
++  <data name="Orders" xml:space="preserve">
++    <value>Orders</value>
++  </data>
++  <data name="Search" xml:space="preserve">
++    <value>Search</value>
++  </data>
++  <data name="ShoppingCart" xml:space="preserve">
++    <value>Cart</value>
++  </data>
++</root>
+\ No newline at end of file
+Index: FoodDelivery.Web.App/Resources/NavMenuComponentResources.cs.resx
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/FoodDelivery.Web.App/Resources/NavMenuComponentResources.cs.resx b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.cs.resx
+new file mode 100644
+--- /dev/null	(date 1670700450484)
++++ b/FoodDelivery.Web.App/Resources/NavMenuComponentResources.cs.resx	(date 1670700450484)
+@@ -0,0 +1,135 @@
++<?xml version="1.0" encoding="utf-8"?>
++<root>
++  <!-- 
++    Microsoft ResX Schema 
++    
++    Version 2.0
++    
++    The primary goals of this format is to allow a simple XML format 
++    that is mostly human readable. The generation and parsing of the 
++    various data types are done through the TypeConverter classes 
++    associated with the data types.
++    
++    Example:
++    
++    ... ado.net/XML headers & schema ...
++    <resheader name="resmimetype">text/microsoft-resx</resheader>
++    <resheader name="version">2.0</resheader>
++    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
++    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
++    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
++    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
++    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
++        <value>[base64 mime encoded serialized .NET Framework object]</value>
++    </data>
++    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
++        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
++        <comment>This is a comment</comment>
++    </data>
++                
++    There are any number of "resheader" rows that contain simple 
++    name/value pairs.
++    
++    Each data row contains a name, and value. The row also contains a 
++    type or mimetype. Type corresponds to a .NET class that support 
++    text/value conversion through the TypeConverter architecture. 
++    Classes that don't support this are serialized and stored with the 
++    mimetype set.
++    
++    The mimetype is used for serialized objects, and tells the 
++    ResXResourceReader how to depersist the object. This is currently not 
++    extensible. For a given mimetype the value must be set accordingly:
++    
++    Note - application/x-microsoft.net.object.binary.base64 is the format 
++    that the ResXResourceWriter will generate, however the reader can 
++    read any of the formats listed below.
++    
++    mimetype: application/x-microsoft.net.object.binary.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
++            : and then encoded with base64 encoding.
++    
++    mimetype: application/x-microsoft.net.object.soap.base64
++    value   : The object must be serialized with 
++            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
++            : and then encoded with base64 encoding.
++
++    mimetype: application/x-microsoft.net.object.bytearray.base64
++    value   : The object must be serialized into a byte array 
++            : using a System.ComponentModel.TypeConverter
++            : and then encoded with base64 encoding.
++    -->
++  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
++    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
++    <xsd:element name="root" msdata:IsDataSet="true">
++      <xsd:complexType>
++        <xsd:choice maxOccurs="unbounded">
++          <xsd:element name="metadata">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" />
++              </xsd:sequence>
++              <xsd:attribute name="name" use="required" type="xsd:string" />
++              <xsd:attribute name="type" type="xsd:string" />
++              <xsd:attribute name="mimetype" type="xsd:string" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="assembly">
++            <xsd:complexType>
++              <xsd:attribute name="alias" type="xsd:string" />
++              <xsd:attribute name="name" type="xsd:string" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="data">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
++              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
++              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
++              <xsd:attribute ref="xml:space" />
++            </xsd:complexType>
++          </xsd:element>
++          <xsd:element name="resheader">
++            <xsd:complexType>
++              <xsd:sequence>
++                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
++              </xsd:sequence>
++              <xsd:attribute name="name" type="xsd:string" use="required" />
++            </xsd:complexType>
++          </xsd:element>
++        </xsd:choice>
++      </xsd:complexType>
++    </xsd:element>
++  </xsd:schema>
++  <resheader name="resmimetype">
++    <value>text/microsoft-resx</value>
++  </resheader>
++  <resheader name="version">
++    <value>2.0</value>
++  </resheader>
++  <resheader name="reader">
++    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <resheader name="writer">
++    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
++  </resheader>
++  <data name="Home" xml:space="preserve">
++    <value>Domů</value>
++  </data>
++  <data name="Restaurants" xml:space="preserve">
++    <value>Restaurace</value>
++  </data>
++  <data name="Orders" xml:space="preserve">
++    <value>Objednávky</value>
++  </data>
++  <data name="Search" xml:space="preserve">
++    <value>Vyhledat</value>
++  </data>
++  <data name="ShoppingCart" xml:space="preserve">
++    <value>Košík</value>
++  </data>
++</root>
+\ No newline at end of file

@@ -1,0 +1,23 @@
+/**
+ * author: Marek Klofera 
+ * login: xklofe01
+ */
+.NavBarComponent {
+    background-color: $primary-color !important;
+    a {
+        text-decoration: none;
+        color: $text-inverted-color;
+        font-weight: 700;
+        &:hover {
+            color: $text-main-color;
+        }
+    }
+    .dropdown-menu{
+        color: $text-main-color;
+        --bs-dropdown-bg: #232323;
+
+        &:hover {
+            color: $text-inverted-color;
+        }
+    }
+}

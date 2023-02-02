@@ -1,0 +1,42 @@
+﻿<local:UserControlBase x:Class="ICS.App.Views.UserListView"
+                       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                       xmlns:interactions="http://schemas.microsoft.com/xaml/behaviors"
+                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                       xmlns:viewModels="clr-namespace:ICS.App.ViewModel"
+                       xmlns:local="clr-namespace:ICS.App.Views"
+                       mc:Ignorable="d"
+                       Background="WhiteSmoke"
+                       d:DataContext="{d:DesignInstance viewModels:UserListViewModel}"
+                       d:DesignHeight="300" d:DesignWidth="150">
+    <Grid Width="150" Visibility="{Binding SelectedUser, Converter={StaticResource NotVisibilityConverter}, Mode=TwoWay}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Button Grid.Row="0" Content="New User" Command="{Binding UserNewCommand}" Foreground="White" Padding="5" />
+        <ListBox x:Name="UsersListBox"
+             Grid.Row="1"
+             ItemsSource="{Binding Users}">
+            <interactions:Interaction.Triggers>
+                <interactions:EventTrigger EventName="SelectionChanged">
+                    <interactions:InvokeCommandAction Command="{Binding UserSelectedCommand}"
+                                            CommandParameter="{Binding ElementName=UsersListBox, Path=SelectedItem}" />
+                </interactions:EventTrigger>
+            </interactions:Interaction.Triggers>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <!--<Image Width="50" Height="50" Source="{Binding ImageUrl}"/>-->
+                        <Label Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center" Content="{Binding Firstname}" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</local:UserControlBase>

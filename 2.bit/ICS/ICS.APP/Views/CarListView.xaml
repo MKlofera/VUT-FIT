@@ -1,0 +1,63 @@
+﻿<local:UserControlBase x:Class="ICS.App.Views.CarListView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:ICS.App.Views"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+             xmlns:viewModel="clr-namespace:ICS.App.ViewModel"
+             mc:Ignorable="d"
+             d:DesignHeight="450" d:DesignWidth="300"
+             d:DataContext="{d:DesignInstance viewModel:CarListViewModel}" >
+    <Grid Margin="0 10 0 0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Button Grid.Column="0" Content="New Car" Command="{Binding NewCarCommand}"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Command="{Binding CarDeleteCommand}" Width="24" Height="24" Padding="3" Margin="5 0 0 0"
+                    IsEnabled="{Binding SelectedCar, Converter={StaticResource NullToBoolConverter}}">
+                    <Image Source="{svgc:SvgImage Source=img/trash.svg}" />
+                </Button>
+
+                <Button Command="{Binding CarDetailCommand}" Width="24" Height="24" Padding="3" Margin="5 0 0 0"
+                    IsEnabled="{Binding SelectedCar, Converter={StaticResource NullToBoolConverter}}">
+                    <Image Source="{svgc:SvgImage Source=img/eye.svg}" />
+                </Button>
+            </StackPanel>
+        </Grid>
+
+        <ListBox Grid.Row="1" x:Name="CarsListBox" ItemsSource="{Binding Cars}" ScrollViewer.VerticalScrollBarVisibility="Visible" HorizontalContentAlignment="Stretch"
+            SelectedItem="{Binding SelectedCar, Mode=TwoWay}">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="35" />
+                            <RowDefinition Height="30" />
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="80" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Image Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Stretch="UniformToFill" HorizontalAlignment="Center" VerticalAlignment="Center" Source="{Binding Photography}" Margin="0 0 10 0" />
+                        <TextBlock Grid.Row="0" Grid.Column="1" FontWeight="Bold" FontSize="20" Text="{Binding Brand}" VerticalAlignment="Center" Margin="0 0 5 0" />
+                        <TextBlock Grid.Row="0" Grid.Column="2" FontSize="20" Text="{Binding Model}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Text="{Binding RegistrationDate, StringFormat=d. M. yyyy}" VerticalAlignment="Center" />
+                    </Grid>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </Grid>
+</local:UserControlBase>

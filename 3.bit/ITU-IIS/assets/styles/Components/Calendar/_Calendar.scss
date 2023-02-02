@@ -1,0 +1,39 @@
+/**
+ * author: Tomáš Szabó 
+ * login: xszabo16
+ */
+
+.calendar {
+    padding: 30px;
+    section {
+        margin-bottom: 30px;
+    }
+    
+    h1 {
+        font-size: 22px;
+        font-weight: bold;
+    }
+    h2 {
+        font-size: 18px;
+    }
+    
+    .green {
+        color: green;
+        font-weight: bold;
+    }
+    
+    .red {
+        color: red;
+        font-weight: bold;
+    }
+    
+    .brown {
+        color: brown;
+        font-weight: bold;
+    }
+    
+    .blue {
+        color: blue;
+        font-weight: bold;
+    }
+}

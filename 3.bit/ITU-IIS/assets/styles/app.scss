@@ -1,0 +1,134 @@
+/**
+ * authors: Marek Klofera, Tomáš Szabó, Jan Šuman
+ */
+@import "../../node_modules/bootstrap/scss/bootstrap.scss";
+
+// Fonts
+@import "https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700";
+
+//Variables
+@import "./Variables/Variables";
+
+//Pages
+@import "./Pages/index";
+@import "./Pages/UserListPage";
+
+//Components
+    @import "./Components/NavBar";
+    //Calendar
+    @import "./Components/Calendar/Calendar";
+    //About
+    @import "./Components/About/About";
+    //Support
+    @import "./Components/Support/Support";
+    //Dog
+    @import "./Components/Dog/DogListCard";
+    @import "./Components/Dog/DogDetailInfo";
+    @import "./Components/Dog/DogVetRecords";
+    //Filters
+    @import "./Components/Filters/DualRangeSlider";
+    @import "./Components/Filters/SexCheckButton";
+    //Login_registation
+    @import "Components/Login_Registration/login";
+    @import "Components/Login_Registration/registration";
+    // TableComponent
+    @import "./Components/TableComponent";
+    // Outsources
+    @import "~react-image-gallery/styles/scss/image-gallery.scss";
+
+.navBarLink {
+    margin: 10px;
+}
+
+.center {
+    text-align: center;
+}
+
+.small-text {
+    font-size: 12px;
+}
+
+.forgot-password-link-px {
+    padding-left: 0px !important;
+    padding-right: 0px !important;
+}
+
+body {
+    background-color: rgb(241, 241, 241);
+    font-family: "open sans";
+    color: $text-main-color;
+}
+
+.section {
+    width: 100%;
+    text-align: center;
+}
+
+.main-page {
+    position: relative;
+}
+
+#title {
+    position: absolute;
+    font-size: 10vw;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+}
+
+img {
+    width: 50%;
+}
+
+.button {
+    appearance: button;
+    backface-visibility: hidden;
+    background-color: $white-color;
+    border-radius: 6px;
+    border-width: 0;
+    box-shadow: rgba(50, 50, 93, 0.1) 0 0 0 1px inset,
+        rgba(50, 50, 93, 0.1) 0 2px 5px 0, rgba(0, 0, 0, 0.07) 0 1px 1px 0;
+    box-sizing: border-box;
+    color: $primary-color;
+    cursor: pointer;
+    font-family: -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue",
+        Ubuntu, sans-serif;
+    font-size: 100%;
+    height: 44px;
+    line-height: 1.15;
+    margin: 0;
+    outline: none;
+    overflow: hidden;
+    padding: 0 25px;
+    position: relative;
+    text-align: center;
+    text-transform: none;
+    transform: translateZ(0);
+    transition: all 0.2s, box-shadow 0.08s ease-in;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    width: 100%;
+}
+
+.button:disabled {
+    cursor: default;
+}
+
+.active {
+    background-color: $primary-color;
+    color: $white-color;
+}
+
+.row {
+    --bs-gutter-x: 0;
+}
+
+.form-card {
+    width: 20rem;
+    border-radius: 10px;
+    background-color: whitesmoke;
+    box-shadow: 0px 5px 20px black;
+    padding: 20px;
+}

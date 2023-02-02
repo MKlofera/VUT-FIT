@@ -1,0 +1,134 @@
+﻿<Window x:Class="ICS.App.Views.RideDetailWindow"
+        x:Name="RideDetailW"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+        xmlns:views="clr-namespace:ICS.App.Views"
+        xmlns:viewmodel="clr-namespace:ICS.App.ViewModel"
+        xmlns:interactions="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        d:DataContext="{d:DesignInstance Type=viewmodel:RideDetailViewModel}"
+        WindowStartupLocation="CenterOwner"
+        mc:Ignorable="d"
+        Title="Jízda" Icon="../icon.ico" MinHeight="650" Height="700" MinWidth="400" Width="500">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Orientation="Vertical">
+            <StackPanel Orientation="Horizontal" Margin="0 0 0 5">
+                <TextBlock Text="{Binding Model.StartDestination}" FontWeight="Bold" FontSize="20" />
+                <TextBlock Text=" → " FontWeight="Bold" FontSize="20" />
+                <TextBlock Text="{Binding Model.EndDestination}" FontWeight="Bold" FontSize="20" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Image Height="15" Width="15" Source="{svgc:SvgImage Source=img/driving_wheel.svg}" Margin="0 0 5 0" />
+                <TextBlock Text="Driver:" Margin="0 0 5 0" />
+                <TextBlock Text="{Binding Model.Model.Driver.Firstname}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 3 0 0">
+                <Image Height="15" Width="15" Source="{svgc:SvgImage Source=img/clock.svg}" Margin="0 0 5 0" />
+                <TextBlock Text="Duration:" Margin="0 0 5 0" />
+                <TextBlock Text="{Binding Model.Duration}" />
+                <TextBlock Text=" min" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal">
+                <Image Height="15" Width="15" Source="{svgc:SvgImage Source=img/users.svg}" Margin="0 0 5 3" />
+                <TextBlock Text="Occupancy:" Margin="0 0 5 3" VerticalAlignment="Center" />
+                <TextBlock Text="{Binding Model.Model.Carpoolers.Count}" VerticalAlignment="Center" Margin="0 0 0 1" />
+                <TextBlock Text=" / " VerticalAlignment="Center" Margin="0 0 0 1" />
+                <TextBox Text="{Binding Model.AvailableSeats}" MinWidth="20" IsReadOnly="{Binding IsNotEditable}" />
+            </StackPanel>
+
+            <TextBlock Text="Start:" FontSize="15" FontWeight="Bold"  Margin="0 20 0 0" />
+            <StackPanel Orientation="Horizontal" Margin="10 0 0 0">
+                <Image Height="15" Width="15" Source="{svgc:SvgImage Source=img/calendar.svg}" Margin="0 0 5 0" />
+                <TextBox Text="{Binding Model.StartDestination}" MinWidth="50" FontSize="14" IsReadOnly="{Binding IsNotEditable}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="10 0 0 0">
+                <Image Height="15" Width="15" Source="{svgc:SvgImage Source=img/clock.svg}" Margin="0 0 5 0" />
+                <DatePicker SelectedDate="{Binding Path=Model.StartTime}" MinWidth="75" IsEnabled="{Binding IsEditable}" />
+                <materialDesign:TimePicker SelectedTime="{Binding Path=Model.StartTime}" Is24Hours="True" MinWidth="50" IsEnabled="{Binding IsEditable}"/>
+            </StackPanel>
+
+            <TextBlock Text="End:" FontSize="15" FontWeight="Bold"  Margin="0 20 0 0" />
+            <StackPanel Orientation="Horizontal" Margin="10 0 0 0">
+                <Image Height="15" Width="15" Source="{svgc:SvgImage Source=img/calendar.svg}" Margin="0 0 5 0" />
+                <TextBox Text="{Binding Model.EndDestination}" MinWidth="50" FontSize="14" IsReadOnly="{Binding IsNotEditable}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="10 0 0 0">
+                <Image Height="15" Width="15" Source="{svgc:SvgImage Source=img/clock.svg}" Margin="0 0 5 0" />
+                <DatePicker SelectedDate="{Binding Path=Model.EndTime}" MinWidth="75" IsEnabled="{Binding IsEditable}" />
+                <materialDesign:TimePicker SelectedTime="{Binding Path=Model.EndTime}" Is24Hours="True" MinWidth="50" IsEnabled="{Binding IsEditable}"/>
+            </StackPanel>
+
+            <TextBlock Text="Car:" FontSize="15" FontWeight="Bold"  Margin="0 20 0 0" />
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Image Grid.Column="0" Source="{Binding SelectedCar.Photography}" Width="200" Margin="0 0 5 0"/>
+                <StackPanel Grid.Column="1" Orientation="Vertical">
+                    <ComboBox Name="carsSelect" ItemsSource="{Binding UsersCars}" SelectedItem="{Binding SelectedCar}"
+                              Visibility="{Binding IsEditable, Converter={StaticResource VisibilityConverter}}">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="{Binding Brand}" FontWeight="Bold" FontSize="20" Margin="0 0 5 0"/>
+                                    <TextBlock Text="{Binding Model}" FontSize="20" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <StackPanel Orientation="Horizontal" Visibility="{Binding IsNotEditable, Converter={StaticResource VisibilityConverter}}">
+                        <TextBlock Text="{Binding SelectedCar.Brand}" FontWeight="Bold" FontSize="20" Margin="0 0 5 0"/>
+                        <TextBlock Text="{Binding SelectedCar.Model}" FontSize="20" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 10 0 0">
+                        <TextBlock Text="Registration date: " VerticalAlignment="Top"/>
+                        <TextBlock Text="{Binding SelectedCar.RegistrationDate, StringFormat=d. M. yyyy}" VerticalAlignment="Top"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0 10 0 0">
+                        <TextBlock Text="Type: " VerticalAlignment="Top"/>
+                        <TextBlock Text="{Binding SelectedCar.Type}" VerticalAlignment="Top"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Carpoolers:" FontSize="15" FontWeight="Bold"  Margin="0 20 0 0" />
+                <Button Command="{Binding CarpoolerKickOffCommand}" Width="24" Height="24" Padding="3" Margin="10 0 10 0" Cursor="Hand" VerticalAlignment="Bottom"
+                    IsEnabled="{Binding SelectedCarpooler, Converter={StaticResource NullToBoolConverter}}" Visibility="{Binding IsEditable, Converter={StaticResource VisibilityConverter}}">
+                    <Image Source="{svgc:SvgImage Source=img/minus.svg}" />
+                </Button>
+            </StackPanel>
+        </StackPanel>
+
+        <ListView Grid.Row="1" ItemsSource="{Binding Model.Model.Carpoolers}" SelectionMode="Single" SelectedItem="{Binding SelectedCarpooler}"
+            ScrollViewer.CanContentScroll="True" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn DisplayMemberBinding="{Binding Lastname}" Header="Lastname" Width="150" />
+                    <GridViewColumn DisplayMemberBinding="{Binding Firstname}" Header="Firstname" Width="150" />
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0 15 0 0"
+                    Visibility="{Binding IsEditable, Converter={StaticResource VisibilityConverter}}">
+            <Button Content="Delete" Command="{Binding DeleteCommand}" Margin="0 0 5 0" CommandParameter="{Binding ElementName=RideDetailW}" />
+            <Button Content="Save" Command="{Binding SaveCommand}"/>
+        </StackPanel>
+
+    </Grid>
+</Window>

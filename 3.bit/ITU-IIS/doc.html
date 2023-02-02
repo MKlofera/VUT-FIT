@@ -1,0 +1,179 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=iso-8859-2" />
+    <title>Projekt IIS</title>
+    <style type="text/css">
+        table {
+            border-collapse: collapse;
+        }
+
+        td,
+        th {
+            border: 1px solid black;
+            padding: 0.3em 0.5em;
+            text-align: left;
+        }
+
+        dt {
+            font-weight: bold;
+            margin-top: 0.5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Zkontrolujte prosím nastavení kódování v hlavičce dokumentu 
+     podle použitého editoru -->
+
+    <h1>Zvířecí útulek</h1> <!-- Nahradte názvem svého zadání -->
+
+    <dl>
+        <dt>Autoři</dt>
+        <dd>Tomáš Szabó
+            <!-- Nahraďte skutečným jménem a e-mailem autora a popisem činnosti -->
+            <a href="mailto:xszabo16@stud.fit.vutbr.cz">xszabo16@stud.fit.vutbr.cz</a> -
+            <ul>
+                <li>Kapitán</li>
+                <li>Kalendář a jeho CRUD operace a validace vstupů</li>
+                <li>Vytvoření autentizace pomocí JWT tokenu</li>
+                <li>Vytvoření automatického odhlašování po nečinnosti přihlášeného uživatele</li>
+                <li>Knihovna na kontrolu přístupu na frontendu UserUtils</li>
+                <li>Přihlašování uživatele a validace vstupů</li>
+                <li>Ukládání hesla do databáze pomocí bcrypt algoritmu</li>
+                <li>Registrace uživatele a validace vstupů</li>
+                <li>Nastavení serveru a propojení Symfony s Reactem</li>
+                <li>Dokumentace</li>
+            </ul>
+        </dd>
+        <dd>Marek Klofera
+            <!-- Nahraďte skutečným jménem a e-mailem autora a popisem činnosti -->
+            <a href="mailto:xklofe01@stud.fit.vutbr.cz">xklofe01@stud.fit.vutbr.cz</a> -
+            <ul>
+                <li>Vytvoření wireframu v nástroji figma</li>
+                <li>Vytvoření uvodní stránky</li>
+                <li>Vytvoření detailu psa a jeho CRUD operace</li>
+                <li>Vytvoření veterinárních záznamů a jejich CRUD operace</li>
+                <li>Vytvoření stránky pro zobrazení všech uživatelů a jejich mazání a změnu statusu</li>
+                <li>Přidávání psů a validace při vstupních hodnotách</li>
+                <li>Vytvoření komponenty pro zobrazení dat v podobě tabulek</li>
+                <li>UI filtrovaní</li>
+                <li>Dokumentace</li>
+            </ul>
+
+        </dd>
+        <dd>Jan Šuman
+            <!-- Nahraďte skutečným jménem a e-mailem autora a popisem činnosti -->
+            <a href="mailto:xsuman02@stud.fit.vutbr.cz">xsuman02@stud.fit.vutbr.cz</a> -
+            <ul>
+                <li>Konfigurace SQL databáze a prostředků na komunikaci</li>
+                <li>Vytvoření SQL fixtures</li>
+                <li>Implementace komponenty na filtrování psů na hlavní stránce</li>
+                <li>Vytvoření stránky pro zobrazování historie venčení uživatele</li>
+                <li>Vytvoření stránky pro zobrazování rezervací venčení, změnu stavů a mazání</li>
+                <li>Vytvoření komponenty pro filtrování dat v tabulkách</li>
+                <li>Vytvoření videa</li>
+                <li>Dokumentace</li>
+            </ul>
+        </dd>
+        <dt>URL aplikace</dt>
+        <dd><a href="http://bulbasaur.binic.xyz">http://bulbasaur.binic.xyz</a></dd>
+        <dd><a href="http://utulek.binic.xyz">http://utulek.binic.xyz</a></dd>
+    </dl>
+
+    <h2>Uživatelé systému pro testování</h2>
+    <p>Uveďte prosím existující zástupce <strong>všech rolí uživatelů</strong>.</p>
+    <table>
+        <tr>
+            <th>Login</th>
+            <th>Heslo</th>
+            <th>Role</th>
+        </tr>
+        <tr>
+            <td>admin@email.cz</td>
+            <td>admin</td>
+            <td>Administrátor</td>
+        </tr>
+        <tr>
+            <td>mdobes@email.cz</td>
+            <td>mdobes</td>
+            <td>Veterinář</td>
+        </tr>
+        <tr>
+            <td>mdrahy@email.cz</td>
+            <td>mdrahy</td>
+            <td>Pečovatel</td>
+        </tr>
+        <tr>
+            <td>jkral@email.cz</td>
+            <td>jkral</td>
+            <td>Dobrovolník</td>
+        </tr>
+        <tr>
+            <td>volunteer@email.cz</td>
+            <td>volunteer</td>
+            <td>Dobrovolník (neaktivovaný)</td>
+        </tr>
+    </table>
+
+    <!-- <p>(Diagram případů užití není nutné vkládat, pokud IS implementuje role a případy užití definované zadáním.)</p>  -->
+
+    <h3>Video</h3>
+
+    <p><a href="https://drive.google.com/file/d/1tEFPnbuv8oqwvpGzDtZZBiioP1O1TBNe/view?usp=share_link">video</a></p>
+
+    <h2>Implementace</h2>
+    <p>Stručná dokumentace k implementaci, která popisuje, které části projektu (např. PHP skripty) implementují
+        jednotlivé případy použití.</p>
+    <ul>
+        <li>Registrace - UserController.php, route: '/signup', API route: 'POST API/user/signup'</li>
+        <li>Vidí seznam zvířat - DogController.php, route: '/', API route: 'GET API/dog'</li>
+        <li>Vidí detail zvířat - DogController.php, route: '/dog/{id}', API route: 'GET API/dog/{id}'</li>
+        <li>Informace o ůtulku - IndexController.php, route: '/{cesta}', popis: vše co nezačíná API řeší react
+            componenta, která nás odkazuje na stránky</li>
+        <li>Rezervace zvířete na venčení - CalendarController.php, route: '/calendar', API route: 'POST
+            API/calendarEvent/add'</li>
+        <li>Vidí kalendář rezervací - CalendarController.php, route: '/calendar', API route: 'GET API/calendarEvent/§
+        </li>
+        <li>Vidí historii svých venčení - CalendarController.php, route: '/Historie-venceni', API route: 'GET API/walkingHistory</li>
+        <li>Vidí a edituje veterinární požadavky</li>
+        <li>Vidí a edituje zdravotní záznamy zvířat</li>
+        <li>Eviduje zvířata</li>
+        <li>Potvrzuje dobrovolníky - UserController.php, route: '/user-list', API route: 'POST API/user/changeUserRole</li>
+        <li>Schvaluje rezervace zvířat na venčení, eviduje zapůjčení a vrácení - CalendarController.php, route: '/rezervace', API route: 'GET API/calendarEvent/changeStatus</li>
+        <li>Vytváří požadavky na veterináře</li>
+
+    </ul>
+    <h3>Databáze</h3>
+
+    Zde vložte grafické schéma relační databáze (tabulek v databázi).
+    <img src="./ituiis-er.jpg" width="800px" height="auto">
+    <h2>Instalace</h2>
+
+    Stručně popište:
+    <ul>
+        <li>Instalace PHP balíčku (Verze PHP 8.1.12)</li>
+        <li>Instalace composer (Verze Composeru 2.4.2)</li>
+        <li>Instalace nginx(Verze NGINX 1.18.0)</li>
+        <li>Instalace nodejs(Verze NodeJS 12.22.9)</li>
+        <li>Instalace npm přes nvm(Verze NVM 0.39.1 a NPM 9.1.2)</li>
+        <li>Nastavení nginx konfigurace</li>
+        <li>Klon repozitáře do '/var/www/' složky</li>
+        <li>Kontrola práv</li>
+        <li>Instalace composer a npm balíčků v repozitáři</li>
+        <li>Konfugrace .env.prod souboru(přidání hodnot pro propojení s databází, hash klíče pro jwt, vypnutí
+            debuggování)</li>
+        <li>Instalace microsoft sqlsrv pro Ubuntu s PHP-FPM podle návodu (<a
+                href="https://learn.microsoft.com/en-us/sql/connect/php/installation-tutorial-linux-mac?view=sql-server-ver16#installing-on-ubuntu-with-php-fpm">návod
+                zde</a>)</li>
+        <li>Vygenerování JWT klíčů ('php bin/console lexik:jwt:generate-keypair')</li>
+    </ul>
+
+    <h2>Známé problémy</h2>
+    <p>Kontrola políček probíhá na serveru a u většiny se nezobrazuje chybová hláška. Stránka veterinárních požadavků není implementovaná.</p>
+
+</body>
+
+</html>

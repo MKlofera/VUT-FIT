@@ -1,0 +1,13 @@
+#  author: Tomáš Szabó 
+#  login: xszabo16
+
+controllers:
+    resource: ../src/Controller/
+    type: attribute
+
+api_login_check:
+    path: /API/login_check
+
+app_logout:
+    path: /API/logout
+    methods: GET
