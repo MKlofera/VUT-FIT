@@ -1,5 +1,6 @@
 # VUT-FIT ITU-ISS UTULEK 
-We are helping dogs find new home and people with their lonely life 
+- ITU 54/55
+- IIS 20/30
 
 # Getting Started
 ## 1.	Installation process
