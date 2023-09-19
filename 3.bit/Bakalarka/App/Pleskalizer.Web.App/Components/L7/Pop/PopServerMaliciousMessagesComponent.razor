@@ -1,0 +1,122 @@
+﻿@using IO.Swagger.Models
+@using Microsoft.Extensions.Configuration
+@using System.Text.Json
+@using Blazored.LocalStorage
+@using Newtonsoft.Json
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+
+
+<MudDataGrid Items="@MaliciousMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(MaliciousMessagesDto item) => { SelectedItemChangedHandler(item); }">
+    <Columns>
+        <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.PopServerMessage.Envelope.DateTicks ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+        <PropertyColumn Property="x => x.MaliciousWord" Title="Malicious words" Hideable="true" ShowColumnOptions="true"/>
+        <PropertyColumn Property="x => x.PopServerMessage.Envelope.Subject" Title="Subject" Hideable="true" ShowColumnOptions="true"/>
+        <PropertyColumn Property="x => x.PopServerMessage.Envelope.MessageId" Title="Message ID" Hideable="true" ShowColumnOptions="true"/>
+        <PropertyColumn Property="x => x.PopServerMessage.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+    </Columns>
+    <PagerContent>
+        <MudDataGridPager T="MaliciousMessagesDto"/>
+    </PagerContent>
+</MudDataGrid>
+
+<MudExpansionPanels>
+    <MudExpansionPanel Text="Malicious key words" IsInitiallyExpanded="true">
+        <MudGrid Class="d-flex align-center">
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudTextField @bind-Value="NewTypedKeyword" Label="Type malicious word" Variant="Variant.Text"></MudTextField>
+                </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                <MudButton @onclick="AddKeyword" Color="Color.Success" Variant="Variant.Filled">Add</MudButton>
+                <MudButton @onclick="() => { MaliciousWords = new List<string>();}" Color="Color.Error" Variant="Variant.Filled">Remove all</MudButton>
+                <MudButton @onclick="SetMaliciousWords" Color="Color.Info" Variant="Variant.Filled">Add default keywords</MudButton>
+                <MudButton @onclick="FindMaliciousMessages" Color="Color.Primary" Variant="Variant.Filled">Search</MudButton>
+            </MudItem>
+                <MudItem>
+                    @foreach (var keyword in MaliciousWords)
+                    {
+                        <MudBadge @onclick="() => RemoveKeyword(keyword)" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="mx-6 my-4 cursor-pointer">
+                            <MudText Typo="Typo.caption">@keyword</MudText>
+                        </MudBadge>
+                    }
+                </MudItem>
+            </MudGrid>
+
+    </MudExpansionPanel>
+</MudExpansionPanels>
+
+@code {
+    [Parameter]
+    public Guid CaseId { get; set; }
+    
+    [Parameter]
+    public List<PopServerMessageDTO>? PopMessages { get; set; }
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+    
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+    
+    private List<MaliciousMessagesDto>? MaliciousMessages { get; set; }
+
+    private List<string> MaliciousWords { get; set; } = new List<string>();
+    
+    private string NewTypedKeyword { get; set; } = String.Empty;
+
+    protected override void OnInitialized()
+    {
+        SetMaliciousWords();
+    }
+
+    private void SetMaliciousWords()
+    {
+        MaliciousWords = Configuration.GetSection("MaliciousKeyWords").GetChildren().Select(x=>x.Value).ToList();
+    }
+    
+    private void FindMaliciousMessages()
+    {
+        MaliciousMessages = new List<MaliciousMessagesDto>();
+        foreach (var popMessage in PopMessages!)
+        {
+            var foundMaliciousWords = MaliciousWords
+                .Where(maliciousWord => popMessage.Email.Payload.ToLower().Contains(maliciousWord.ToLower()) 
+                                        || popMessage.Envelope.Subject.ToLower().Contains(maliciousWord.ToLower()))
+                .ToList();
+
+            if (foundMaliciousWords.Count <= 0) continue;
+            
+            var maliciousMessage = new MaliciousMessagesDto(popMessage, string.Join(", ", foundMaliciousWords));
+            MaliciousMessages.Add(maliciousMessage);
+        }
+    }
+    
+    private async void SelectedItemChangedHandler(MaliciousMessagesDto item)
+    {
+        var url = $"/pop-server/{CaseId}/detail";
+        await LocalStorage.SetItemAsync("PopServerMessageDTODetail", item.PopServerMessage);
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private void RemoveKeyword(string keyword)
+    {
+        MaliciousWords!.RemoveAll(x => x == keyword);
+    }
+
+    private void AddKeyword()
+    {
+        MaliciousWords.Add(NewTypedKeyword);
+        StateHasChanged();
+    }
+
+    private class MaliciousMessagesDto
+    {
+        public PopServerMessageDTO PopServerMessage { get; set; }
+        public string MaliciousWord { get; set; }
+
+        public MaliciousMessagesDto(PopServerMessageDTO popServerMessage, string maliciousWord)
+        {
+            PopServerMessage = popServerMessage;
+            MaliciousWord = maliciousWord;
+        }
+    }
+}

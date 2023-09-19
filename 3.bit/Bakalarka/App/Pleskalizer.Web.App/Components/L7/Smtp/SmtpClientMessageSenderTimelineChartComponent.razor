@@ -1,0 +1,126 @@
+﻿@using IO.Swagger.Models
+@using ApexCharts
+@using Color = MudBlazor.Color
+
+
+@if (SearchedSenderList.Count > 0)
+{
+    <DemoContainer>
+        <MudGrid Class="d-flex justify-end">
+            <MudItem>
+                <MudIconButton @onclick="() => _chart.RenderAsync()" Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" Color="Color.Primary"/>
+            </MudItem>
+        </MudGrid>
+        <ApexChart TItem="ChartModel"
+                   @ref="_chart">
+            @for (int i = 0; i < SearchedSenderList.Count; i++)
+            {
+                var j = i; // necessary, can't use "i" in YAggregate
+                <ApexPointSeries TItem="ChartModel"
+                                 Items="ChartData"
+                                 Name="@SearchedSenderList[i]"
+                                 XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                 YAggregate="@(e => e.Count(e => e.SmtpClientMessage.Envelope.Sender == SearchedSenderList[j]))"
+                                 OrderBy="e => e.X"
+                                 SeriesType="SeriesType.Bar"/>
+            }
+
+        </ApexChart>
+
+    </DemoContainer>
+}
+@if (ChartData.Count > 0)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="8" md="8" lg="8" xl="8">
+            <MudTextField @bind-Value="TextValue" Label="Type sender to see comunication in time" Variant="Variant.Text"></MudTextField>
+        </MudItem>
+        <MudItem xs="12" sm="4" md="4" lg="4" xl="4">
+            <MudButton @onclick="() => AddSenderHandler()" Color="Color.Primary" Variant="Variant.Filled">Add</MudButton>
+        </MudItem>
+        <MudItem xs="12" sm="10" md="10" lg="10" xl="10">
+            @foreach (var item in SearchedSenderList)
+            {
+                <MudBadge @onclick="() => RemoveSenderHandler(item)" Icon="@Icons.Material.Filled.Delete" Color="Color.Error" Class="mx-6 my-4 cursor-pointer">
+                    <MudText Typo="Typo.caption">@item</MudText>
+                </MudBadge>
+            }
+        </MudItem>
+    </MudGrid>
+    
+}
+
+@code {
+
+    [Parameter]
+    public List<SmtpClientMessageDTO>? Data { get; set; }
+
+    public List<ChartModel> ChartData { get; set; } = new List<ChartModel>();
+    private ApexChart<ChartModel> _chart;
+
+    private List<string> SearchedSenderList { get; set; } = new List<string>();
+
+    public string TextValue { get; set; } = String.Empty;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Data.Count == 0) return;
+
+        ChartData = new List<ChartModel>();
+        SearchedSenderList = new List<string>();
+
+        var oneNinth = Data.Min(x => x.Envelope.DateTicks ?? 0);
+        var nineNinths = Data!.Max(x => x.Envelope.DateTicks ?? 0);
+
+        double range = nineNinths - oneNinth;
+        var twoNinths = (oneNinth + (range * 0.125));
+        var threeNinths = (oneNinth + (range * 0.250));
+        var forNinths = (oneNinth + (range * 0.375));
+        var fiveNinths = (oneNinth + (range * 0.5));
+        var sixNinths = (oneNinth + (range * 0.625));
+        var sevenNinths = (oneNinth + (range * 0.75));
+        var eightNinths = (oneNinth + (range * 0.875));
+
+        foreach (var item in Data)
+        {
+            if (item.Envelope.DateTicks < twoNinths) ChartData.Add(new ChartModel(item, twoNinths));
+            else if (item.Envelope.DateTicks > twoNinths && item.Envelope.DateTicks <= threeNinths) ChartData.Add(new ChartModel(item, threeNinths));
+            else if (item.Envelope.DateTicks > threeNinths && item.Envelope.DateTicks <= forNinths) ChartData.Add(new ChartModel(item, forNinths));
+            else if (item.Envelope.DateTicks > forNinths && item.Envelope.DateTicks <= fiveNinths) ChartData.Add(new ChartModel(item, fiveNinths));
+            else if (item.Envelope.DateTicks > fiveNinths && item.Envelope.DateTicks <= sixNinths) ChartData.Add(new ChartModel(item, sixNinths));
+            else if (item.Envelope.DateTicks > sixNinths && item.Envelope.DateTicks <= sevenNinths) ChartData.Add(new ChartModel(item, sevenNinths));
+            else if (item.Envelope.DateTicks > sevenNinths && item.Envelope.DateTicks <= eightNinths) ChartData.Add(new ChartModel(item, eightNinths));
+            else if (item.Envelope.DateTicks > eightNinths && item.Envelope.DateTicks <= nineNinths) ChartData.Add(new ChartModel(item, nineNinths));
+        }
+        StateHasChanged();
+    }
+    
+    private async Task AddSenderHandler()
+    {
+        SearchedSenderList.Add(TextValue);
+        TextValue = String.Empty;
+        if (SearchedSenderList.Count > 1)
+        {
+            await _chart.RenderAsync();
+            await _chart.RenderAsync(); // has to be twice or chart not updating
+            StateHasChanged();
+        }
+    }
+
+    private void RemoveSenderHandler(string uriToRemove)
+    {
+        SearchedSenderList.RemoveAll(x => x == uriToRemove);
+    }
+
+    public class ChartModel
+    {
+        public SmtpClientMessageDTO SmtpClientMessage { get; set; }
+        public double Timestamp { get; set; }
+
+        public ChartModel(SmtpClientMessageDTO smtpClientMessage, double timestamp)
+        {
+            SmtpClientMessage = smtpClientMessage;
+            Timestamp = timestamp;
+        }
+    }
+}

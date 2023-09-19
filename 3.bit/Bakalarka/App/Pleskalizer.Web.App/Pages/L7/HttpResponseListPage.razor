@@ -1,0 +1,169 @@
+﻿@page "/http-response/{CaseId:guid}/list"
+@using Pleskalizer.Web.BL.Facades.L7
+@using Pleskalizer.Web.App.Components.L7.Http
+@using IO.Swagger.Models
+
+<PageTitle>HTTP response Conversation</PageTitle>
+
+<section>
+    <MudGrid Class="d-flex justify-space-between align-center mb-5">
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h3" GutterBottom="true">HTTP Response</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="8" lg="4" xl="4">
+            <MudTextField @bind-Value="SearchSessionValue" Label="Search" Placeholder="search session" Variant="Variant.Text" FullWidth="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4" lg="2" xl="2">
+            <MudButton @onclick="GetMessagesAsync" Variant="Variant.Filled" Color="Color.Primary">Search</MudButton>
+            <MudButton @onclick="CancelSessionSearchHandlerAsync" Variant="Variant.Filled" Color="Color.Error">Cancel</MudButton>
+        </MudItem>
+    </MudGrid>
+</section>
+
+
+@if (HttpResponse is null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+}
+else
+{
+    <section>
+        <MudGrid>
+            <MudItem>
+                <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled" Class="mb-2">Columns</MudButton>
+            </MudItem>
+        </MudGrid>
+        <MudDataGrid Items="@HttpResponse.Items" EditMode="@DataGridEditMode.Cell" Dense="true" Striped="true" Hover="true" Bordered="true" Groupable="true" Filterable="true" @ref="Table">
+            <Columns>
+                <HierarchyColumn T="HttpResponseDTO"/>
+                <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.Timestamp ?? default(long)).ToLocalTime()" Title="Date" Hideable="true"/>
+                <PropertyColumn Property="x => x.StatusCode" Title="Status code" Hideable="true"/>
+                <PropertyColumn Property="x => x.Headers.Count" Title="Headers" Hideable="true" AggregateDefinition="_headersAggregation"/>
+                <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true"/>
+            </Columns>
+            <ChildRowContent>
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Headers</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudDataGrid Items="@context.Item.Headers" Dense="true" Striped="true" Hover="true" Bordered="true" Groupable="true" Filterable="true">
+                            <Columns>
+                                <PropertyColumn Property="x => x.Name" Title="Name" Hideable="true"/>
+                                <PropertyColumn Property="x => x.Value" Title="Value" Hideable="true"/>
+                            </Columns>
+                        </MudDataGrid>
+                    </MudCardContent>
+                </MudCard>
+            </ChildRowContent>
+        </MudDataGrid>
+    </section>
+
+    <section>
+        <Pagination @bind-PageSize="PageSize" @bind-PageState="PageState"></Pagination>
+    </section>
+
+    if (HttpResponse.Items.Count > 0)
+    {
+        <section class="my-3">
+            <MudExpansionPanels Elevation="2">
+                <MudExpansionPanel Text="Charts">
+                    <HttpResponseChartsComponent Data="HttpResponse.Items"/>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </section>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private HttpFacade HttpFacade { get; set; } = null!;
+
+    private HttpResponseDTOPageQueryResultDTO? HttpResponse { get; set; }
+
+    private MudDataGrid<HttpResponseDTO> Table { get; set; } = null!;
+
+    private string SearchSessionValue { get; set; } = String.Empty;
+
+    private int _pageSize = 20;
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    private int _pageState;
+
+    private int PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessagesAsync();
+    }
+
+    private async Task GetMessagesAsync()
+    {
+        if (SearchSessionValue == String.Empty)
+        {
+            byte[] pageState = IntToByteArr(PageState);
+            HttpResponse = await HttpFacade.GetAllResponses(CaseId, pageState, PageSize);
+            StateHasChanged();
+        }
+        else
+        {
+            await GetSessionResultsAsync();
+        }
+    }
+
+    private async Task GetSessionResultsAsync()
+    {
+        byte[] pageState = IntToByteArr(PageState);
+        HttpResponse = await HttpFacade.GetAllResponsesWithSession(CaseId, Guid.Parse(SearchSessionValue), pageState, PageSize);
+        StateHasChanged();
+    }
+
+    private async Task CancelSessionSearchHandlerAsync()
+    {
+        SearchSessionValue = String.Empty;
+        await GetMessagesAsync();
+    }
+
+    private byte[] IntToByteArr(int number)
+    {
+        return BitConverter.GetBytes(number);
+    }
+
+    readonly AggregateDefinition<HttpResponseDTO> _headersAggregation = new AggregateDefinition<HttpResponseDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Headers.Count)), 2);
+            var min = x.Min(z => z.Headers.Count);
+            var max = x.Max(z => z.Headers.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+}
+

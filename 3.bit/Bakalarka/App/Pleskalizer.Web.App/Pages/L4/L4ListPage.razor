@@ -1,0 +1,136 @@
+﻿@page "/l4/{CaseId:guid}/list"
+@using Pleskalizer.Web.App.Extensions
+@using Pleskalizer.Web.App.Components.L4
+@using Pleskalizer.Web.BL.Facades.L4
+@using IO.Swagger.Models
+@using Microsoft.AspNetCore.Components
+@using Color = MudBlazor.Color
+
+<PageTitle>L4 Conversation</PageTitle>
+
+<section>
+    <MudText Typo="Typo.h3" GutterBottom="true">L4 Conversation</MudText>
+</section>
+
+@if (L4Data is null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+}
+else
+{
+    <section>
+        <MudGrid Class="my-3">
+            <MudItem>
+                <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled">Columns</MudButton>
+            </MudItem>
+        </MudGrid>
+
+        <MudDataGrid Items="@L4Data.Items" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L4ConversationStatisticsListDTO item) => { SelectedItemChangedHandlerAsync(item); }" @ref="Table">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortA" Title="PortA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortB" Title="PortB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL4" Title="Protocol L4" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL4))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+        </MudDataGrid>
+    </section>
+
+    <section class="my-2">
+        <Pagination @bind-PageSize="PageSize" @bind-PageState="PageState"></Pagination>
+    </section>
+
+    if (L4Data.Items.Count > 0)
+    {
+        <section>
+            <MudExpansionPanels MultiExpansion="true" Elevation="2">
+                <MudExpansionPanel Text="Aggregation" Class="my-2">
+                    <L4ListAggregationComponent CaseId="CaseId" L4MessagesList="L4Data.Items"/>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="Graphs" Class="my-2">
+                    <L4ListChartComponent L4MessagesList="L4Data.Items"/>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </section>
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private L4Facade L4Facade { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private L4ConversationStatisticsListDTOPageQueryResultDTO? L4Data { get; set; }
+    private MudDataGrid<L4ConversationStatisticsListDTO> Table { get; set; } = null!;
+
+    private int _pageSize = 20;
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    private int _pageState;
+
+    private int PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessagesAsync();
+    }
+
+    private async Task GetMessagesAsync()
+    {
+        byte[] pageState = IntToByteArr(PageState);
+        L4Data = await L4Facade.GetAll(CaseId, pageState, PageSize);
+        StateHasChanged();
+    }
+
+    private async void SelectedItemChangedHandlerAsync(L4ConversationStatisticsListDTO item)
+    {
+        var url = $"/l4/{CaseId}/{item.CaptureId}?AddressA={item.AddressA}&AddressB={item.AddressB}&ProtocolL4={item.ProtocolL4}&PortA={item.PortA}&PortB={item.PortB}";
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private string GetEnumDisplayValue(Enum enumValue)
+    {
+        return enumValue.GetDisplayName();
+    }
+
+    private byte[] IntToByteArr(int number)
+    {
+        return BitConverter.GetBytes(number);
+    }
+
+}
+

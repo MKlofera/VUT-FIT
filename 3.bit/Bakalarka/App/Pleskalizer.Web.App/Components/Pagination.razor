@@ -1,0 +1,59 @@
+﻿<MudStack Row="true" Class="d-flex justify-content-center">
+    <MudSelect T="int" @bind-Value="PageSize" Label="Page size" AnchorOrigin="Origin.BottomCenter" Style="max-width: 80px">
+        <MudSelectItem Value="@(10)"/>
+        <MudSelectItem Value="@(20)"/>
+        <MudSelectItem Value="@(50)"/>
+        <MudSelectItem Value="@(100)"/>
+        <MudSelectItem Value="@(500)"/>
+        <MudSelectItem Value="@(1000)"/>
+    </MudSelect>
+
+    <div>
+        <MudIconButton @onclick="() => OnPageStateChanged(-1)" Icon="@Icons.Material.Filled.ArrowLeft" Size="Size.Large"></MudIconButton>
+        <MudIconButton @onclick="() => OnPageStateChanged(1)" Icon="@Icons.Material.Filled.ArrowRight" Size="Size.Large"></MudIconButton>
+        <MudText Typo="Typo.caption">Page: @(PageState + 1)</MudText>
+    </div>
+</MudStack>
+
+@code {
+    private int _pageSize;
+
+    [Parameter]
+    public int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            if (_pageSize != value)
+            {
+                _pageSize = value;
+                SetPageState(0);
+                _ = PageSizeChanged.InvokeAsync(_pageSize);
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int> PageSizeChanged { get; set; }
+
+    [Parameter]
+    public int PageState { get; set; }
+
+    [Parameter]
+    public EventCallback<int> PageStateChanged { get; set; }
+
+    private Task OnPageStateChanged(int pageChange)
+    {
+        if (pageChange == 1 || (pageChange == -1 && PageState >= 1))
+        {
+            PageState += pageChange;
+        }
+        return PageStateChanged.InvokeAsync(PageState);
+    }
+
+    private void SetPageState(int pageState)
+    {
+        PageState = pageState;
+    }
+
+}

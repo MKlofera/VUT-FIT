@@ -1,0 +1,43 @@
+﻿@using IO.Swagger.Models
+
+@if (L7MessagesList != null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L7MessagesList.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">Protocol L4 - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L7MessagesList.Select(x => x.ProtocolL4.ToString()).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">Protocol L7 - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L7MessagesList.Select(x => x.ProtocolL7.ToString()).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L7MessagesList.Select(x => x.AddressA).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L7MessagesList.Select(x => x.AddressB).ToList()"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">PortA - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L7MessagesList.Select(x => x.PortA.ToString()).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">PortB - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L7MessagesList.Select(x => x.PortB.ToString()).ToList()"/>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+
+    [Parameter]
+    public List<L7ConversationStatisticsListDTO>? L7MessagesList { get; set; }
+
+}

@@ -1,0 +1,181 @@
+﻿@using IO.Swagger.Models
+@using System.Net
+@using Pleskalizer.Web.App.Extensions
+@using Microsoft.AspNetCore.Components
+
+<MudGrid Class="d-flex align-center mb-3">
+    <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
+        <MudTextField @bind-Value="TypedIpAddress" Label="Type IP address" Variant="Variant.Text"></MudTextField>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="4" lg="4" xl="4">
+        <MudButton @onclick="GetAggregatedMessages" Color="Color.Primary" Variant="Variant.Filled">Aggregate</MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (L3SearchedMessages.Count > 0)
+{
+    <section>
+    <MudExpansionPanels MultiExpansion="true">
+    <MudExpansionPanel Text="@($"AddressA/B = {TypedIpAddress}")">
+        <MudDataGrid Items="@L3SearchedMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L3ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+  
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L3ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L3SearchedMessages.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L3SearchedMessages.Select(x => x.AddressA).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L3SearchedMessages.Select(x => x.AddressB).ToList()"/>
+                </MudItem>
+
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="@($"AddressA = {TypedIpAddress}")">
+        <MudDataGrid Items="@AddressAIpSearchedMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L3ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L3ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressAIpSearchedMessages.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressAIpSearchedMessages.Select(x => x.AddressB).ToList()"/>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="@($"AddressB = {TypedIpAddress}")">
+
+        <MudDataGrid Items="@AddressBIpSearchedMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L3ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L3ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressBIpSearchedMessages.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressBIpSearchedMessages.Select(x => x.AddressA).ToList()"/>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    </MudExpansionPanels>
+    </section>
+}
+else
+{
+    <MudText Typo="Typo.h4">No Results</MudText>
+}
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Parameter]
+    public List<L3ConversationStatisticsListDTO>? L3MessagesList { get; set; }
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private List<L3ConversationStatisticsListDTO> L3SearchedMessages { get; set; } = new List<L3ConversationStatisticsListDTO>();
+
+    private List<L3ConversationStatisticsListDTO> AddressAIpSearchedMessages { get; set; } = new List<L3ConversationStatisticsListDTO>();
+    private List<L3ConversationStatisticsListDTO> AddressBIpSearchedMessages { get; set; } = new List<L3ConversationStatisticsListDTO>();
+
+    private MudDataGrid<L3ConversationStatisticsListDTO> Table { get; set; } = null!;
+
+
+    private string TypedIpAddress { get; set; } = String.Empty;
+
+    private void GetAggregatedMessages()
+    {
+        if (L3MessagesList == null) return;
+
+        L3SearchedMessages = new List<L3ConversationStatisticsListDTO>();
+        AddressAIpSearchedMessages = new List<L3ConversationStatisticsListDTO>();
+        AddressBIpSearchedMessages = new List<L3ConversationStatisticsListDTO>();
+
+        if (TypedIpAddress != String.Empty)
+        {
+            L3SearchedMessages = L3MessagesList
+                .Where(x => x.AddressA == TypedIpAddress || x.AddressB == TypedIpAddress)
+                .ToList();
+
+            AddressAIpSearchedMessages = L3MessagesList
+                .Where(x => x.AddressA == TypedIpAddress)
+                .ToList();
+
+            AddressBIpSearchedMessages = L3MessagesList
+                .Where(x => x.AddressB == TypedIpAddress)
+                .ToList();
+        }
+        StateHasChanged();
+    }
+
+    private async void SelectedItemChangedHandler(L3ConversationStatisticsListDTO item)
+    {
+        var url = $"/l3/{CaseId}/{item.CaptureId}?AddressA={item.AddressA}&AddressB={item.AddressB}";
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private string GetEnumDisplayValue(Enum enumValue)
+    {
+        return enumValue.GetDisplayName();
+    }
+}

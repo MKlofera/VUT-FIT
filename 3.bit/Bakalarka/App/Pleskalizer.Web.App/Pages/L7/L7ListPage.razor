@@ -1,0 +1,138 @@
+﻿@page "/l7/{CaseId:guid}/list"
+@using Pleskalizer.Web.BL.Facades.L7
+@using IO.Swagger.Models
+@using Microsoft.AspNetCore.Components
+@using Pleskalizer.Web.App.Extensions
+@using Pleskalizer.Web.App.Components.L7
+
+<PageTitle>L7 Conversation</PageTitle>
+
+<section>
+    <MudText Typo="Typo.h3" GutterBottom="true">L7 Conversation</MudText>
+</section>
+
+@if (L7Data is null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+}
+else
+{
+    <section>
+        <MudGrid Class="my-3">
+            <MudItem>
+                <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled">Columns</MudButton>
+            </MudItem>
+        </MudGrid>
+
+        <MudDataGrid Items="@L7Data.Items" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L7ConversationStatisticsListDTO item) => { SelectedItemChangedHandlerAsync(item); }" @ref="Table">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortA" Title="PortA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortB" Title="PortB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL4" Title="Protocol L4" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL4))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL7" Title="Protocol L7" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+        </MudDataGrid>
+    </section>
+
+    <section class="my-2">
+        <Pagination @bind-PageSize="PageSize" @bind-PageState="PageState"></Pagination>
+    </section>
+
+    if (L7Data.Items.Count > 0)
+    {
+        <section>
+            <MudExpansionPanels MultiExpansion="true" Elevation="2">
+                <MudExpansionPanel Text="Aggregation" Class="my-2">
+                    <L7ListAggregationComponent CaseId="CaseId" L7MessagesList="L7Data.Items"/>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="Graphs" Class="my-2">
+                    <L7ListChartComponent L7MessagesList="L7Data.Items"/>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </section>
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private L7Facade L7Facade { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private L7ConversationStatisticsListDTOPageQueryResultDTO? L7Data { get; set; }
+
+    private MudDataGrid<L7ConversationStatisticsListDTO> Table { get; set; } = null!;
+
+    private int _pageSize = 20;
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    private int _pageState;
+
+    private int PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessagesAsync();
+    }
+
+    private async Task GetMessagesAsync()
+    {
+        byte[] pageState = IntToByteArr(PageState);
+        L7Data = await L7Facade.GetAll(CaseId, pageState, PageSize);
+        StateHasChanged();
+    }
+
+    private async void SelectedItemChangedHandlerAsync(L7ConversationStatisticsListDTO item)
+    {
+        var url = $"/l7/{CaseId}/{item.CaptureId}?AddressA={item.AddressA}&AddressB={item.AddressB}&ProtocolL4={item.ProtocolL4}&PortA={item.PortA}&PortB={item.PortB}&SessionId={item.SessionId}";
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private string GetEnumDisplayValue(Enum enumValue)
+    {
+        return enumValue.GetDisplayName();
+    }
+
+    private byte[] IntToByteArr(int number)
+    {
+        return BitConverter.GetBytes(number);
+    }
+
+}

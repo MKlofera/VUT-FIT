@@ -1,0 +1,134 @@
+﻿@using IO.Swagger.Models
+@using ApexCharts
+@using Color = MudBlazor.Color
+
+@if (ChartData.Count > 0)
+{
+    <DemoContainer>
+        <MudGrid Class="d-flex justify-end">
+            <MudItem>
+                <MudIconButton @onclick="() => _chart.RenderAsync()" Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" Color="Color.Primary"/>
+            </MudItem>
+        </MudGrid>
+        <ApexChart TItem="ChartModel"
+                   @ref="_chart">
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="OPTIONS"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.OPTIONSEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="GET"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.GETEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="HEAD"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.HEADEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="POST"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.POSTEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="PUT"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.PUTEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="DELETE"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.DELETEEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="TRACE"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.TRACEEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="CONNECT"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.CONNECTEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+            <ApexPointSeries TItem="ChartModel"
+                             Items="ChartData"
+                             Name="PATCH"
+                             XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                             YAggregate="@(e => e.Count(e => e.HttpRequest.Method == HttpRequestDTO.MethodEnum.PATCHEnum))"
+                             OrderBy="e => e.X"
+                             SeriesType="SeriesType.Bar"/>
+
+        </ApexChart>
+    </DemoContainer>
+}
+
+@code {
+
+    [Parameter]
+    public ICollection<HttpRequestDTO> Data { get; set; } = new List<HttpRequestDTO>();
+
+    public List<ChartModel> ChartData { get; set; } = new List<ChartModel>();
+    private ApexChart<ChartModel> _chart;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Data.Count == 0) return;
+
+        ChartData = new List<ChartModel>();
+        var oneNinth = Data.Min(x => x.Timestamp ?? 0);
+        var nineNinths = Data!.Max(x => x.Timestamp ?? 0);
+
+        double range = nineNinths - oneNinth;
+        var twoNinths = (oneNinth + (range * 0.125));
+        var threeNinths = (oneNinth + (range * 0.250));
+        var forNinths = (oneNinth + (range * 0.375));
+        var fiveNinths = (oneNinth + (range * 0.5));
+        var sixNinths = (oneNinth + (range * 0.625));
+        var sevenNinths = (oneNinth + (range * 0.75));
+        var eightNinths = (oneNinth + (range * 0.875));
+
+        foreach (var item in Data)
+        {
+            if (item.Timestamp < twoNinths) ChartData.Add(new ChartModel(item, twoNinths));
+            else if (item.Timestamp > twoNinths && item.Timestamp <= threeNinths) ChartData.Add(new ChartModel(item, threeNinths));
+            else if (item.Timestamp > threeNinths && item.Timestamp <= forNinths) ChartData.Add(new ChartModel(item, forNinths));
+            else if (item.Timestamp > forNinths && item.Timestamp <= fiveNinths) ChartData.Add(new ChartModel(item, fiveNinths));
+            else if (item.Timestamp > fiveNinths && item.Timestamp <= sixNinths) ChartData.Add(new ChartModel(item, sixNinths));
+            else if (item.Timestamp > sixNinths && item.Timestamp <= sevenNinths) ChartData.Add(new ChartModel(item, sevenNinths));
+            else if (item.Timestamp > sevenNinths && item.Timestamp <= eightNinths) ChartData.Add(new ChartModel(item, eightNinths));
+            else if (item.Timestamp > eightNinths && item.Timestamp <= nineNinths) ChartData.Add(new ChartModel(item, nineNinths));
+        }
+        StateHasChanged();
+    }
+
+    public class ChartModel
+    {
+        public HttpRequestDTO HttpRequest { get; set; }
+        public double Timestamp { get; set; }
+
+        public ChartModel(HttpRequestDTO httpRequest, double timestamp)
+        {
+            HttpRequest = httpRequest;
+            Timestamp = timestamp;
+        }
+    }
+
+}

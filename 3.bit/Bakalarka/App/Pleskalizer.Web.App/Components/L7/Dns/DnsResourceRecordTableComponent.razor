@@ -1,0 +1,27 @@
+﻿@using IO.Swagger.Models
+@using Pleskalizer.Web.App.Extensions
+<MudTable Items="DnsRecourses" FixedHeader="true" HorizontalScrollbar="true" Dense="true" Hover="true" Bordered="true" SortLabel="Sort By" Elevation="0">
+    <HeaderContent>
+        <MudTh>
+            <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<DnsResourceRecord, object>(x => x.Type)">Type</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<DnsResourceRecord, object>(x => x.Name)">Name</MudTableSortLabel>
+        </MudTh>
+        <MudTh>
+            <MudTableSortLabel SortBy="new Func<DnsResourceRecord, object>(x => x.Name)">Target</MudTableSortLabel>
+        </MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Address A: ">@context.Type?.GetDisplayName()</MudTd>
+        <MudTd DataLabel="Address B: ">@context.Name</MudTd>
+        <MudTd DataLabel="Address B: ">@context.Target</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+
+    [Parameter]
+    public List<DnsResourceRecord> DnsRecourses { get; set; } = null!;
+
+}

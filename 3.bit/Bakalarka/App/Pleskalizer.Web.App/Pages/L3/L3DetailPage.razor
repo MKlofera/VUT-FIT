@@ -1,0 +1,142 @@
+﻿@page "/l3/{CaseId:guid}/{CaptureId:guid}"
+@using Pleskalizer.Web.BL.Facades.L3
+@using IO.Swagger.Models
+@using System.Web
+@using System.Runtime.InteropServices.JavaScript
+@using System.Globalization
+@using Pleskalizer.Web.App.Extensions
+
+
+<PageTitle>L3 detail</PageTitle>
+<MudGrid Class="align-center my-5">
+    <MudItem xs="12" sm="12" md="12" lg="3" xl="3">
+        <MudText Typo="Typo.h3" GutterBottom="true">L3 detail</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="3" xl="3">
+        <MudDatePicker Label="Aggregate from" @bind-Date="AggregateFrom"/>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="3" xl="3">
+        <MudDatePicker Label="Aggregate to" @bind-Date="AggregateTo"/>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="2" lg="1" xl="1">
+        <MudButton @onclick="SetDateQueryParamsForAggregation" Color="Color.Primary" Variant="Variant.Filled" FullWidth="true">Search</MudButton>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="2" lg="1" xl="1">
+        <MudButton @onclick="RemoveDateQueryParamsForAggregation" Color="Color.Error" Variant="Variant.Filled" FullWidth="true">Cancel</MudButton>
+    </MudItem>
+</MudGrid>
+
+<MudText Typo="Typo.caption">Case Id: @CaseId.ToString()</MudText>
+<br/>
+<MudText Typo="Typo.caption">Capture Id: @CaptureId.ToString()</MudText>
+
+@if (_l3Data == null)
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+}
+else
+{
+    <section class="my-5">
+        <MudText Typo="Typo.subtitle1">
+            <b>Address A:</b> @AddressA
+        </MudText>
+        <MudText Typo="Typo.subtitle1">
+            <b>Address B:</b> @AddressB
+        </MudText>
+        <MudText Typo="Typo.subtitle1">
+            <b>Protocol L3:</b> @_l3Data.ProtocolL3?.GetDisplayName()
+        </MudText>
+    </section>
+    
+    <section class="my-5">
+        <MudExpansionPanels Elevation="2" MultiExpansion="true">
+
+            <MudExpansionPanel Text="A to B flowStatistics" IsInitiallyExpanded="true">
+               <FlowStatisticsSnapshotsTableComponent FlowStatistics="_l3Data.AToBFlowStatisticsSnapshots"></FlowStatisticsSnapshotsTableComponent>
+            </MudExpansionPanel>
+            
+            <MudExpansionPanel Text="B to A flowStatistics" IsInitiallyExpanded="true">
+                <FlowStatisticsSnapshotsTableComponent FlowStatistics="_l3Data.AToBFlowStatisticsSnapshots"></FlowStatisticsSnapshotsTableComponent>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </section>
+}
+
+
+@code{
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Parameter]
+    public Guid CaptureId { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "AddressA")]
+    public string AddressA { get; set; } = null!;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "AddressB")]
+    public string AddressB { get; set; } = null!;
+
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "DateFrom")]
+    public string? DateFrom { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "DateTo")]
+    public string? DateTo { get; set; }
+
+    [Inject]
+    private L3Facade L3Facade { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    [Inject]
+    private NavigationManager NavigationManager { get; set; } = null!;
+
+    private L3ConversationStatisticsDetailDTO _l3Data = new();
+    
+
+    public DateTime? AggregateFrom { get; set; }
+    public DateTime? AggregateTo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+    private async Task GetData()
+    {
+        if (DateFrom != null && DateTo != null)
+        {
+            var from = DateTime.ParseExact(DateFrom, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            var to = DateTime.ParseExact(DateTo, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            _l3Data = await L3Facade.GetL3DetailAggregated(CaseId, CaptureId, AddressA, AddressB, from, to);
+        }
+        else
+        {
+            _l3Data = await L3Facade.GetL3Detail(CaseId, CaptureId, AddressA, AddressB);
+        }
+    }
+    private async Task SetDateQueryParamsForAggregation()
+    {
+        var from = (AggregateFrom ?? DateTime.MinValue).ToString("yyyyMMddHHmmss");
+        var to = (AggregateTo ?? DateTime.Today).ToString("yyyyMMddHHmmss");
+
+        DateFrom = from;
+        DateTo = to;
+
+        var url = NavigationManager.Uri;
+        NavigationManager.NavigateTo(url+$"&DateFrom={from}&DateTo={to}");
+        await GetData();
+    }
+    private async Task RemoveDateQueryParamsForAggregation()
+    {
+        DateFrom = null;
+        DateTo = null;
+        NavigationManager.NavigateTo($"/l3/{CaseId}/{CaptureId}?AddressA={AddressA}&AddressB={AddressB}");
+        await GetData();
+    }
+}

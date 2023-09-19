@@ -1,0 +1,73 @@
+﻿@using IO.Swagger.Models
+
+@if (Data is not null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">Reply codes in time</MudText>
+            <SmtpServerReplyCodeTimelineChartComponent Data="Data"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">All messages in time</MudText>
+            <TimelineComunicationChartComponent Data="GetListOfDates()"></TimelineComunicationChartComponent>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">Reply codes</MudText>
+            <MudPaper Class="pa-4">
+                <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="300px" Height="300px" InputData="@_statusCodeData" InputLabels="@_statusCodeLabels">
+                    <CustomGraphics>
+                        <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                        <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_statusCodeData.Sum().ToString()</text>
+                    </CustomGraphics>
+                </MudChart>
+            </MudPaper>
+        </MudItem>
+
+    </MudGrid>
+}
+else
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+}
+
+@code {
+
+    [Parameter]
+    public List<SmtpServerMessageDTO>? Data { get; set; }
+
+    private double[] _statusCodeData = new double[5];
+    private string[] _statusCodeLabels = new string[5];
+
+    protected override void OnParametersSet()
+    {
+        if (Data is null) return;
+
+        SetStatusCodeData();
+    }
+
+    private void SetStatusCodeData()
+    {
+        _statusCodeData[0] = Data.Count(x => x.ReplyCode >= 100 && x.ReplyCode < 200);
+        _statusCodeData[1] = Data.Count(x => x.ReplyCode >= 200 && x.ReplyCode < 300);
+        _statusCodeData[2] = Data.Count(x => x.ReplyCode >= 300 && x.ReplyCode < 400);
+        _statusCodeData[3] = Data.Count(x => x.ReplyCode >= 400 && x.ReplyCode < 500);
+        _statusCodeData[4] = Data.Count(x => x.ReplyCode >= 500 && x.ReplyCode < 600);
+
+        _statusCodeLabels[0] = $"{_statusCodeData[0]} - 1xx";
+        _statusCodeLabels[1] = $"{_statusCodeData[1]} - 2xx";
+        _statusCodeLabels[2] = $"{_statusCodeData[2]} - 3xx";
+        _statusCodeLabels[3] = $"{_statusCodeData[3]} - 4xx";
+        _statusCodeLabels[4] = $"{_statusCodeData[4]} - 5xx";
+    }
+
+    private List<long> GetListOfDates()
+    {
+        List<long> dateList = new List<long>();
+        foreach (var item in Data)
+        {
+            dateList.Add(item.Timestamp ?? DateTime.UnixEpoch.Ticks);
+        }
+        return dateList;
+    }
+
+}

@@ -1,0 +1,234 @@
+﻿@page "/dns/{CaseId:guid}/list"
+@using IO.Swagger.Models
+@using Pleskalizer.Web.BL.Facades.L7
+@using Blazored.LocalStorage
+@using Pleskalizer.Web.App.Components.L7.Dns
+@using Pleskalizer.Web.App.Extensions
+
+<PageTitle>DNS</PageTitle>
+
+<section>
+    <MudGrid Class="d-flex justify-space-between align-center mb-5">
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h3" GutterBottom="true">DNS</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="8" lg="4" xl="4">
+            <MudTextField @bind-Value="SearchSessionValue" Label="Search" Placeholder="search session" Variant="Variant.Text" FullWidth="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4" lg="2" xl="2">
+            <MudButton @onclick="GetMessages" Variant="Variant.Filled" Color="Color.Primary">Search</MudButton>
+            <MudButton @onclick="CancelSessionSearchHandler" Variant="Variant.Filled" Color="Color.Error">Cancel</MudButton>
+        </MudItem>
+    </MudGrid>
+</section>
+@if (DnsData is null)
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+}
+else
+{
+    <section>
+        <MudGrid Class="d-flex justify-space-between">
+            <MudItem>
+                <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled" Class="mb-3">Columns</MudButton>
+            </MudItem>
+            <MudItem>
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh" Color="Color.Primary" @onclick="RefreshData"></MudIconButton>
+            </MudItem>
+        </MudGrid>
+        <MudDataGrid Items="@DnsData.Items" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(DnsDTO item) => { SelectedItemChangedHandler(item); }" @ref="Table">
+            <Columns>
+                <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.Timestamp ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Type" Title="Type" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.Type))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ReplyCode" Title="Reply code" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ReplyCode))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Questions.Count" Title="Questions" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_questionsAggregation"/>
+                <PropertyColumn Property="x => x.Answers.Count" Title="Answers" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_answersAggregation"/>
+                <PropertyColumn Property="x => x.Authorities.Count" Title="Authorities" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_authoritiesAggregation"/>
+                <PropertyColumn Property="x => x.Additional.Count" Title="Additional" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_additionalAggregation"/>
+                <PropertyColumn Property="x => x.Flags.OpCode" Title="OpCode" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.Flags.OpCode))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.Flags.Authoritative" Title="Authoritative" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Flags.Truncated" Title="Truncated" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Flags.RecursionDesired" Title="Recursion desired" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Flags.RecursionAvailable" Title="Recursion available" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Flags.AnswerAuthenticated" Title="Answer authenticated" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Flags.NonAuthenticatedData" Title="Non authenticated data" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.TransactionId" Title="Transaction ID" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+        </MudDataGrid>
+    </section>
+    
+    <section>
+        <Pagination @bind-PageSize="PageSize" @bind-PageState="PageState"></Pagination>
+    </section>
+    
+    <section class="my-3">
+        <MudExpansionPanels Elevation="2">
+            <MudExpansionPanel Text="Charts">
+                <DnsChartsComponent DnsData="DnsData.Items"/>
+            </MudExpansionPanel>
+        </MudExpansionPanels>
+    </section>
+
+}
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private DnsFacade DnsFacade { get; set; } = null!;
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private DnsDTOPageQueryResultDTO? DnsData { get; set; }
+    private MudDataGrid<DnsDTO> Table { get; set; } = null!;
+
+    private string SearchSessionValue { get; set; } = String.Empty;
+
+    private int _pageSize = 20;
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _ = GetMessages();
+        }
+    }
+
+    private int _pageState;
+
+    private int PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            _ = GetMessages();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessages();
+    }
+
+    private string GetEnumDisplayValue(Enum enumValue)
+    {
+        return enumValue.GetDisplayName();
+    }
+
+    private async Task GetMessages()
+    {
+        
+        if (SearchSessionValue == String.Empty)
+        {
+            byte[] pageState = IntToByteArr(PageState);
+            DnsData = await DnsFacade.GetAll(CaseId, pageState, PageSize);
+            StateHasChanged();
+        }
+        else
+        {
+            await GetSessionResults();
+        }
+    }
+
+    private async Task GetSessionResults()
+    {
+        byte[] pageState = IntToByteArr(PageState);
+        DnsData = await DnsFacade.GetAllWithSession(CaseId, pageState, PageSize, Guid.Parse(SearchSessionValue));
+        StateHasChanged();
+    }
+
+    private async Task CancelSessionSearchHandler()
+    {
+        SearchSessionValue = String.Empty;
+        await GetMessages();
+    }
+
+    private async Task RefreshData()
+    {
+        if (DnsData is not null) DnsData.Items = new List<DnsDTO>();
+        await GetMessages();
+    }
+
+    private async void SelectedItemChangedHandler(DnsDTO item)
+    {
+        var url = $"/dns/{CaseId}/detail";
+        await LocalStorage.SetItemAsync("DnsDTODetail", item);
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private byte[] IntToByteArr(int number)
+    {
+        return BitConverter.GetBytes(number);
+    }
+
+    readonly AggregateDefinition<DnsDTO> _questionsAggregation = new AggregateDefinition<DnsDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Questions.Count)), 2);
+            var min = x.Min(z => z.Questions.Count);
+            var max = x.Max(z => z.Questions.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    readonly AggregateDefinition<DnsDTO> _answersAggregation = new AggregateDefinition<DnsDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Answers.Count)), 2);
+            var min = x.Min(z => z.Answers.Count);
+            var max = x.Max(z => z.Answers.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    readonly AggregateDefinition<DnsDTO> _authoritiesAggregation = new AggregateDefinition<DnsDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Authorities.Count)), 2);
+            var min = x.Min(z => z.Authorities.Count);
+            var max = x.Max(z => z.Authorities.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    readonly AggregateDefinition<DnsDTO> _additionalAggregation = new AggregateDefinition<DnsDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Additional.Count)), 2);
+            var min = x.Min(z => z.Additional.Count);
+            var max = x.Max(z => z.Additional.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+}

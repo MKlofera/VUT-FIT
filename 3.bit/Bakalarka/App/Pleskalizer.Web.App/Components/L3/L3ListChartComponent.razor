@@ -1,0 +1,27 @@
+﻿@using IO.Swagger.Models
+
+@if (L3MessagesList != null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L3MessagesList.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L3MessagesList.Select(x => x.AddressA).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+            <MostOccurrenceDonutChartComponent Data="L3MessagesList.Select(x => x.AddressB).ToList()"/>
+        </MudItem>
+
+    </MudGrid>
+}
+
+@code {
+
+    [Parameter]
+    public List<L3ConversationStatisticsListDTO>? L3MessagesList { get; set; }
+
+}

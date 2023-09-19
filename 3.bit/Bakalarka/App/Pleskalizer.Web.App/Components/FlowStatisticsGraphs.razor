@@ -1,0 +1,223 @@
+﻿@using IO.Swagger.Models
+@using System.Globalization
+@using ApexCharts
+@using Microsoft.Extensions.Options
+@using MudBlazor.Components.Chart.Interpolation
+@using ChartType = MudBlazor.ChartType
+@using Color = MudBlazor.Color
+
+<MudGrid>
+    <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Left" Width="300px" Height="300px"
+                  InputData="@_averageChartData" InputLabels="@_averageChartLabels">
+            <CustomGraphics>
+                <text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Average</text>
+            </CustomGraphics>
+        </MudChart>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+        <MudStack>
+            <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="150px" Height="150px"
+                      InputData="@_minValueChartData" InputLabels="@_minValueChartLabels">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="4">Min</text>
+                </CustomGraphics>
+            </MudChart>
+            <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="150px" Height="150px"
+                      InputData="@_maxValueChartData" InputLabels="@_maxValueChartLabels">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="4">Max</text>
+                </CustomGraphics>
+            </MudChart>
+        </MudStack>
+    </MudItem>
+    
+    <MudItem xs="12" sm="12" md="12" lg="12" xl="12" Style="max-width: 60%" Class="mx-auto">
+        <MudText Typo="Typo.h6" Class="mx-auto">Sum in time intervals</MudText>
+
+        <DemoContainer>
+                <MudGrid Class="d-flex justify-end">
+                    <MudItem>
+                        <MudIconButton @onclick="() => _chart.RenderAsync()" Icon="@Icons.Material.Filled.Refresh" Size="Size.Small" Color="Color.Primary"/>
+                    </MudItem>
+                </MudGrid>
+                <ApexChart TItem="ChartModel"
+                           @ref="_chart">
+                    <ApexPointSeries TItem="ChartModel"
+                                     Items="ChartData"
+                                     Name="Processed frames"
+                                     XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                     YAggregate="@(e => e.Sum(e => e.FlowStatistics.ProcessedFrames))"
+                                     OrderBy="e => e.X"
+                                     SeriesType="SeriesType.Bar"/>
+                    <ApexPointSeries TItem="ChartModel"
+                                     Items="ChartData"
+                                     Name="ProcessedHeaderBytes"
+                                     XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                     YAggregate="@(e => e.Sum(e => e.FlowStatistics.ProcessedHeaderBytes))"
+                                     OrderBy="e => e.X"
+                                     SeriesType="SeriesType.Bar"/>
+                    <ApexPointSeries TItem="ChartModel"
+                                     Items="ChartData"
+                                     Name="ProcessedPayloadBytes"
+                                     XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                     YAggregate="@(e => e.Sum(e => e.FlowStatistics.ProcessedPayloadBytes))"
+                                     OrderBy="e => e.X"
+                                     SeriesType="SeriesType.Bar"/>
+                    <ApexPointSeries TItem="ChartModel"
+                                     Items="ChartData"
+                                     Name="MalformedFrames"
+                                     XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                     YAggregate="@(e => e.Sum(e => e.FlowStatistics.MalformedFrames))"
+                                     OrderBy="e => e.X"
+                                     SeriesType="SeriesType.Bar"/>
+                    <ApexPointSeries TItem="ChartModel"
+                                     Items="ChartData"
+                                     Name="MalformedBytes"
+                                     XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                     YAggregate="@(e => e.Sum(e => e.FlowStatistics.MalformedBytes))"
+                                     OrderBy="e => e.X"
+                                     SeriesType="SeriesType.Bar"/>
+                    <ApexPointSeries TItem="ChartModel"
+                                     Items="ChartData"
+                                     Name="DiscardedFrames"
+                                     XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                     YAggregate="@(e => e.Sum(e => e.FlowStatistics.DiscardedFrames))"
+                                     OrderBy="e => e.X"
+                                     SeriesType="SeriesType.Bar"/>
+                    <ApexPointSeries TItem="ChartModel"
+                                     Items="ChartData"
+                                     Name="DiscardedBytes"
+                                     XValue="@(e => new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(e.Timestamp).ToString("yyyy-M-d"))"
+                                     YAggregate="@(e => e.Sum(e => e.FlowStatistics.DiscardedBytes))"
+                                     OrderBy="e => e.X"
+                                     SeriesType="SeriesType.Bar"/>
+                    
+                </ApexChart>
+        
+            </DemoContainer>
+    </MudItem>
+</MudGrid>
+
+
+@code {
+
+    [Parameter]
+    public List<FlowStatisticsSnapshotDTO> FlowStatistics { get; set; } = new List<FlowStatisticsSnapshotDTO>();
+    
+    private List<ChartModel> ChartData { get; set; } = new List<ChartModel>();
+    private ApexChart<ChartModel> _chart;
+    
+    private double[] _averageChartData = new double[7];
+    private string[] _averageChartLabels = new string[7];
+    
+    private double[] _minValueChartData = new double[7];
+    private string[] _minValueChartLabels = new string[7];
+    
+    private double[] _maxValueChartData = new double[7];
+    private string[] _maxValueChartLabels = new string[7];
+    
+    protected override void OnParametersSet()
+    {
+        SetAverageChartDataAndLabels();
+        SetMinValueChartDataAndLabels();
+        SetMaxValueChartDataAndLabels();
+        SetBarChartData();
+    }
+    
+    private void SetAverageChartDataAndLabels()
+    {
+        _averageChartData[0] = Math.Round(FlowStatistics.Average(x => x.ProcessedFrames) ?? 0);
+        _averageChartData[1] = Math.Round(FlowStatistics.Average(x => x.ProcessedHeaderBytes) ?? 0);
+        _averageChartData[2] = Math.Round(FlowStatistics.Average(x => x.ProcessedPayloadBytes) ?? 0);
+        _averageChartData[3] = Math.Round(FlowStatistics.Average(x => x.MalformedFrames) ?? 0);
+        _averageChartData[4] = Math.Round(FlowStatistics.Average(x => x.MalformedBytes) ?? 0);
+        _averageChartData[5] = Math.Round(FlowStatistics.Average(x => x.DiscardedFrames) ?? 0);
+        _averageChartData[6] = Math.Round(FlowStatistics.Average(x => x.DiscardedBytes) ?? 0);
+        _averageChartLabels[0] = _averageChartData[0] + " - Processed frames";
+        _averageChartLabels[1] = _averageChartData[1] + " - Processed header bytes";
+        _averageChartLabels[2] = _averageChartData[2] + " - Processed payload bytes";
+        _averageChartLabels[3] = _averageChartData[3] + " - Malformed frames";
+        _averageChartLabels[4] = _averageChartData[4] + " - Malformed bytes";
+        _averageChartLabels[5] = _averageChartData[5] + " - Discarded frames";
+        _averageChartLabels[6] = _averageChartData[6] + " - Discarded bytes";
+    }
+    
+    private void SetMinValueChartDataAndLabels()
+    {
+        _minValueChartData[0] = FlowStatistics.Min(x => x.ProcessedFrames) ?? 0;
+        _minValueChartData[1] = FlowStatistics.Min(x => x.ProcessedHeaderBytes) ?? 0;
+        _minValueChartData[2] = FlowStatistics.Min(x => x.ProcessedPayloadBytes) ?? 0;
+        _minValueChartData[3] = FlowStatistics.Min(x => x.MalformedFrames) ?? 0;
+        _minValueChartData[4] = FlowStatistics.Min(x => x.MalformedBytes) ?? 0;
+        _minValueChartData[5] = FlowStatistics.Min(x => x.DiscardedFrames) ?? 0;
+        _minValueChartData[6] = FlowStatistics.Min(x => x.DiscardedBytes) ?? 0;
+        _minValueChartLabels[0] = _minValueChartData[0] + " - Processed frames";
+        _minValueChartLabels[1] = _minValueChartData[1] + " - Processed header bytes";
+        _minValueChartLabels[2] = _minValueChartData[2] + " - Processed payload bytes";
+        _minValueChartLabels[3] = _minValueChartData[3] + " - Malformed frames";
+        _minValueChartLabels[4] = _minValueChartData[4] + " - Malformed bytes";
+        _minValueChartLabels[5] = _minValueChartData[5] + " - Discarded frames";
+        _minValueChartLabels[6] = _minValueChartData[6] + " - Discarded bytes";
+    }
+    
+    private void SetMaxValueChartDataAndLabels()
+    {
+        _maxValueChartData[0] = FlowStatistics.Max(x => x.ProcessedFrames) ?? 0;
+        _maxValueChartData[1] = FlowStatistics.Max(x => x.ProcessedHeaderBytes) ?? 0;
+        _maxValueChartData[2] = FlowStatistics.Max(x => x.ProcessedPayloadBytes) ?? 0;
+        _maxValueChartData[3] = FlowStatistics.Max(x => x.MalformedFrames) ?? 0;
+        _maxValueChartData[4] = FlowStatistics.Max(x => x.MalformedBytes) ?? 0;
+        _maxValueChartData[5] = FlowStatistics.Max(x => x.DiscardedFrames) ?? 0;
+        _maxValueChartData[6] = FlowStatistics.Max(x => x.DiscardedBytes) ?? 0;
+        _maxValueChartLabels[0] = _maxValueChartData[0] + " - Processed frames";
+        _maxValueChartLabels[1] = _maxValueChartData[1] + " - Processed header bytes";
+        _maxValueChartLabels[2] = _maxValueChartData[2] + " - Processed payload bytes";
+        _maxValueChartLabels[3] = _maxValueChartData[3] + " - Malformed frames";
+        _maxValueChartLabels[4] = _maxValueChartData[4] + " - Malformed bytes";
+        _maxValueChartLabels[5] = _maxValueChartData[5] + " - Discarded frames";
+        _maxValueChartLabels[6] = _maxValueChartData[6] + " - Discarded bytes";
+    }
+
+    private void SetBarChartData()
+    {
+        ChartData = new List<ChartModel>();
+        var oneNinth = FlowStatistics.Min(x => x.FirstSeenTimestampTicks ?? 0);
+        var nineNinths = FlowStatistics!.Max(x => x.FirstSeenTimestampTicks ?? 0);
+
+        double range = nineNinths - oneNinth;
+        var twoNinths = (oneNinth + (range * 0.125));
+        var threeNinths = (oneNinth + (range * 0.250));
+        var forNinths = (oneNinth + (range * 0.375));
+        var fiveNinths = (oneNinth + (range * 0.5));
+        var sixNinths = (oneNinth + (range * 0.625));
+        var sevenNinths = (oneNinth + (range * 0.75));
+        var eightNinths = (oneNinth + (range * 0.875));
+
+        foreach (var item in FlowStatistics)
+        {
+            if (item.FirstSeenTimestampTicks < twoNinths) ChartData.Add(new ChartModel(item, twoNinths));
+            else if (item.FirstSeenTimestampTicks > twoNinths && item.FirstSeenTimestampTicks <= threeNinths) ChartData.Add(new ChartModel(item, threeNinths));
+            else if (item.FirstSeenTimestampTicks > threeNinths && item.FirstSeenTimestampTicks <= forNinths) ChartData.Add(new ChartModel(item, forNinths));
+            else if (item.FirstSeenTimestampTicks > forNinths && item.FirstSeenTimestampTicks <= fiveNinths) ChartData.Add(new ChartModel(item, fiveNinths));
+            else if (item.FirstSeenTimestampTicks > fiveNinths && item.FirstSeenTimestampTicks <= sixNinths) ChartData.Add(new ChartModel(item, sixNinths));
+            else if (item.FirstSeenTimestampTicks > sixNinths && item.FirstSeenTimestampTicks <= sevenNinths) ChartData.Add(new ChartModel(item, sevenNinths));
+            else if (item.FirstSeenTimestampTicks > sevenNinths && item.FirstSeenTimestampTicks <= eightNinths) ChartData.Add(new ChartModel(item, eightNinths));
+            else if (item.FirstSeenTimestampTicks > eightNinths && item.FirstSeenTimestampTicks <= nineNinths) ChartData.Add(new ChartModel(item, nineNinths));
+        }
+        StateHasChanged();
+    }
+    
+    public class ChartModel
+    {
+        public FlowStatisticsSnapshotDTO FlowStatistics { get; set; }
+        public double Timestamp { get; set; }
+
+        public ChartModel(FlowStatisticsSnapshotDTO flowStatistics, double timestamp)
+        {
+            FlowStatistics = flowStatistics;
+            Timestamp = timestamp;
+        }
+    }
+
+}

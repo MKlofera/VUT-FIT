@@ -1,0 +1,114 @@
+﻿@using Microsoft.AspNetCore.WebUtilities
+@using Microsoft.Extensions.Primitives
+@using Blazored.LocalStorage
+@using Pleskalizer.Web.BL.Facades
+@using IO.Swagger.Models
+@inherits LayoutComponentBase
+
+<MudThemeProvider Theme="_themeManager.Theme" />
+<MudDialogProvider FullWidth="true"
+                   MaxWidth="MaxWidth.ExtraSmall"
+                   CloseButton="true"
+                   Position="DialogPosition.Center"
+                   CloseOnEscapeKey="true" />
+<MudSnackbarProvider />
+
+<MudLayout>
+    @* MUDBLAZOR THEME MANAGER *@
+    <MudThemeManagerButton OnClick="@((e) => OpenThemeManager(true))" />
+    <MudThemeManager Open="ThemeManagerOpen" OpenChanged="OpenThemeManager" Theme="_themeManager" ThemeChanged="UpdateTheme" />
+    @* ----------------------- *@
+
+    <MudAppBar Elevation="_themeManager.AppBarElevation">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        Pleskalizer
+    </MudAppBar>
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="_themeManager.DrawerClipMode" Elevation="_themeManager.DrawerElevation">
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+            <MudNavLink Href="/case/list" Match="NavLinkMatch.All">Cases</MudNavLink>
+            <MudNavLink @onclick='() => NavigateWithCaseId("/l3", "list")' Match="NavLinkMatch.Prefix">L3</MudNavLink>
+            <MudNavLink @onclick='() => NavigateWithCaseId("/l4", "list")' Match="NavLinkMatch.Prefix">L4</MudNavLink>
+            <MudNavGroup Title="L7" Expanded="true">
+                <MudNavLink @onclick='() => NavigateWithCaseId("/l7", "list")' Match="NavLinkMatch.Prefix">L7</MudNavLink>
+                <MudNavLink @onclick='() => NavigateWithCaseId("/dns", "list")' Match="NavLinkMatch.Prefix">DNS</MudNavLink>
+                <MudNavGroup Title="HTTP" Expanded="true">
+                    <MudNavLink @onclick='() => NavigateWithCaseId("/http-request", "list")' Match="NavLinkMatch.Prefix">Requests</MudNavLink>
+                    <MudNavLink @onclick='() => NavigateWithCaseId("/http-response", "list")' Match="NavLinkMatch.Prefix">Response</MudNavLink>
+                </MudNavGroup>
+                <MudNavGroup Title="SMTP" Expanded="true">
+                    <MudNavLink @onclick='() => NavigateWithCaseId("/smtp-client", "list")' Match="NavLinkMatch.Prefix">Client messages</MudNavLink>
+                    <MudNavLink @onclick='() => NavigateWithCaseId("/smtp-server", "list")' Match="NavLinkMatch.Prefix">Server messages</MudNavLink>
+                </MudNavGroup>
+                <MudNavGroup Title="POP" Expanded="true">
+                    <MudNavLink @onclick='() => NavigateWithCaseId("/pop-client", "list")' Match="NavLinkMatch.Prefix">Client messages</MudNavLink>
+                    <MudNavLink @onclick='() => NavigateWithCaseId("/pop-server", "list")' Match="NavLinkMatch.Prefix">Server messages</MudNavLink>
+                </MudNavGroup>
+            </MudNavGroup>
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.ExtraLarge" class="my-5">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+    
+    [Inject]
+    public NavigationManager NavigationManager { get; set; } = null!;
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+
+    [Inject]
+    private ISnackbar Snackbar { get; set; } = null!;
+
+    [Inject]
+    private CaseFacade CaseFacade { get; set; } = null!;
+
+    private CaseListDTOPageQueryResultDTO _caseList = new CaseListDTOPageQueryResultDTO();
+    
+    private ThemeManagerTheme _themeManager = new ThemeManagerTheme();
+    public bool ThemeManagerOpen = false;
+    bool _drawerOpen = false;
+
+    void OpenThemeManager(bool value)
+    {
+        ThemeManagerOpen = value;
+    }
+
+    void UpdateTheme(ThemeManagerTheme value)
+    {
+        _themeManager = value;
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        StateHasChanged();
+    }
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+    
+    private async Task NavigateWithCaseId(string pageNameBeforeCaseId, string pageNameAfterCaseId)
+    {
+        if (await LocalStorage.ContainKeyAsync("selectedCase"))
+        {
+            var caseId = await LocalStorage.GetItemAsync<Guid>("selectedCase");
+            NavigationManager.NavigateTo($"{pageNameBeforeCaseId}/{caseId}/{pageNameAfterCaseId}");
+        }
+        else
+        {
+            Snackbar.Add("No selected case", Severity.Warning);
+            NavigationManager.NavigateTo("/case/list");
+        }
+    }
+}

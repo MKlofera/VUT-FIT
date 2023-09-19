@@ -1,0 +1,291 @@
+﻿@using IO.Swagger.Models
+@using System.Diagnostics
+@using AutoMapper.Internal
+@if (DnsData is not null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <DonutChartComponent Title="Dns type" Data="@DnsData.Select(x=>x.Type.ToString()).ToList()"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="3">
+            <MudText Typo="Typo.h6">Dns resource records</MudText>
+            <MudPaper Class="pa-4">
+            <MudChart ChartType="ChartType.Donut"LegendPosition="Position.Right" Width="300px" Height="300px" InputData="@_dnsRecourseRecordData" InputLabels="@_dnsRecourseRecordLabels">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                    <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_dnsRecourseRecordData.Sum().ToString()</text>
+                </CustomGraphics>
+            </MudChart>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="3">
+            <MudText Typo="Typo.h6">Dns reply code</MudText>
+            <MudPaper Class="pa-4">
+            
+            <MudChart ChartType="ChartType.Donut"LegendPosition="Position.Right" Width="300px" Height="300px" InputData="@_dnsReplyCodeData" InputLabels="@_dnsReplyCodeLabels">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                    <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_dnsReplyCodeData.Sum().ToString()</text>
+                </CustomGraphics>
+            </MudChart>
+            
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="DNS reply code - reserved chart">
+                    <MudChart ChartType="ChartType.Donut"LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_dnsReplyCodeReservedData" InputLabels="@_dnsReplyCodeReservedLabels">
+                        <CustomGraphics>
+                            <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                            <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_dnsReplyCodeReservedData.Sum().ToString()</text>
+                        </CustomGraphics>
+                    </MudChart>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            </MudPaper>
+            
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="3">
+            <MudText Typo="Typo.h6">Dns OpCode</MudText>
+            <MudPaper Class="pa-4">
+            
+            <MudChart ChartType="ChartType.Donut"LegendPosition="Position.Right" Width="300px" Height="300px" InputData="@_dnsOpCodeData" InputLabels="@_dnsOpCodeLabels">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                    <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_dnsOpCodeData.Sum().ToString()</text>
+                </CustomGraphics>
+            </MudChart>
+            <MudExpansionPanels>
+                <MudExpansionPanel Text="DNS OpCode - Unassigned chart">
+                    <MudChart ChartType="ChartType.Donut"LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_dnsOpCodeUnassignedData" InputLabels="@_dnsOpCodeUnassignedLabels">
+                        <CustomGraphics>
+                            <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                            <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_dnsOpCodeUnassignedData.Sum().ToString()</text>
+                        </CustomGraphics>
+                    </MudChart>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+            </MudPaper>
+            
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">DNS flags</MudText>
+            <div>
+                <MudChart ChartType="ChartType.Bar" ChartSeries="@FlagsData" XAxisLabels="@FlagsLabels" Width="100%" Height="400px"></MudChart>
+            </div>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">DNS communication in time</MudText>
+            <TimelineComunicationChartComponent Data="GetListOfDates()"></TimelineComunicationChartComponent>
+        </MudItem>
+    </MudGrid>
+}
+
+
+@code {
+
+    [Parameter]
+    public ICollection<DnsDTO>? DnsData { get; set; }
+    
+    private double[] _dnsTypeData = new double[2];
+    private string[] _dnsTypeLabels = new string[2];
+
+    private double[] _dnsReplyCodeData = new double[8];
+    private string[] _dnsReplyCodeLabels = new string[8];
+
+    private double[] _dnsReplyCodeReservedData = new double[10];
+    private string[] _dnsReplyCodeReservedLabels = new string[10];
+
+    private double[] _dnsRecourseRecordData = new double[4];
+    private string[] _dnsRecourseRecordLabels = new string[4];
+
+    private double[] _dnsOpCodeData = new double[7];
+    private string[] _dnsOpCodeLabels = new string[7];
+
+    private double[] _dnsOpCodeUnassignedData = new double[10];
+    private string[] _dnsOpCodeUnassignedLabels = new string[10];
+
+
+    public List<ChartSeries> FlagsData = new List<ChartSeries>() { new ChartSeries(), new ChartSeries() };
+    public string[] FlagsLabels = { "Authoritative", "Truncated", "Recursion desired", "Recursion available", "Answer authen.", "Non authen. data" };
+
+    protected override void OnParametersSet()
+    {
+        if (DnsData is null) return;
+        
+        SetDnsTypeData();
+        SetDnsReplyCodeData();
+        SetDnsReplyCodeReservedData();
+        SetDnsRecourceRecordData();
+        SetDnsOpCodeData();
+        SetDnsOpCodeUnassignedData();
+        SetFlagsData();
+    }
+    
+    private void SetDnsTypeData()
+    {
+        _dnsTypeData[0] = DnsData.Count(x => x.Type == DnsDTO.TypeEnum.AnswerEnum);
+        _dnsTypeData[1] = DnsData.Count(x => x.Type == DnsDTO.TypeEnum.QueryEnum);
+        _dnsTypeLabels[0] = $"{_dnsTypeData[0]} - Query";
+        _dnsTypeLabels[1] = $"{_dnsTypeData[1]} - Answer";
+    }
+
+    private void SetDnsReplyCodeData()
+    {
+        _dnsReplyCodeData[0] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.NoErrorEnum);
+        _dnsReplyCodeData[1] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.FormatErrorEnum);
+        _dnsReplyCodeData[2] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.ServerFailureEnum);
+        _dnsReplyCodeData[3] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.NameErrorEnum);
+        _dnsReplyCodeData[4] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.NotImplementedEnum);
+        _dnsReplyCodeData[5] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.RefusedEnum);
+        _dnsReplyCodeData[6] = DnsData.Count(x => x.ReplyCode is DnsDTO.ReplyCodeEnum.Reserved6Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved7Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved8Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved9Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved10Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved11Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved12Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved13Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved14Enum or 
+            DnsDTO.ReplyCodeEnum.Reserved15Enum
+            );
+        _dnsReplyCodeData[7] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.NotSupportedEnum);
+
+        _dnsReplyCodeLabels[0] = $"{_dnsReplyCodeData[0]} - NoError";
+        _dnsReplyCodeLabels[1] = $"{_dnsReplyCodeData[1]} - FormatError";
+        _dnsReplyCodeLabels[2] = $"{_dnsReplyCodeData[2]} - ServerFailure";
+        _dnsReplyCodeLabels[3] = $"{_dnsReplyCodeData[3]} - NameError";
+        _dnsReplyCodeLabels[4] = $"{_dnsReplyCodeData[4]} - NotImplemented";
+        _dnsReplyCodeLabels[5] = $"{_dnsReplyCodeData[5]} - Refused";
+        _dnsReplyCodeLabels[6] = $"{_dnsReplyCodeData[6]} - Reserved x";
+        _dnsReplyCodeLabels[7] = $"{_dnsReplyCodeData[7]} - NotSupported";
+    }
+
+    private void SetDnsReplyCodeReservedData()
+    {
+        _dnsReplyCodeReservedData[0] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved6Enum);
+        _dnsReplyCodeReservedData[1] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved7Enum);
+        _dnsReplyCodeReservedData[2] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved8Enum);
+        _dnsReplyCodeReservedData[3] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved9Enum);
+        _dnsReplyCodeReservedData[4] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved10Enum);
+        _dnsReplyCodeReservedData[5] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved11Enum);
+        _dnsReplyCodeReservedData[6] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved12Enum);
+        _dnsReplyCodeReservedData[7] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved13Enum);
+        _dnsReplyCodeReservedData[8] = DnsData.Count(x => x.ReplyCode == DnsDTO.ReplyCodeEnum.Reserved14Enum);
+        _dnsReplyCodeReservedData[9] = DnsData.Count(x => x.ReplyCode is DnsDTO.ReplyCodeEnum.Reserved15Enum);
+
+        _dnsReplyCodeReservedLabels[0] = $"{_dnsReplyCodeReservedData[0]} - Reserved6Enum";
+        _dnsReplyCodeReservedLabels[1] = $"{_dnsReplyCodeReservedData[1]} - Reserved7Enum";
+        _dnsReplyCodeReservedLabels[2] = $"{_dnsReplyCodeReservedData[2]} - Reserved8Enum";
+        _dnsReplyCodeReservedLabels[3] = $"{_dnsReplyCodeReservedData[3]} - Reserved9Enum";
+        _dnsReplyCodeReservedLabels[4] = $"{_dnsReplyCodeReservedData[4]} - Reserved10Enum";
+        _dnsReplyCodeReservedLabels[5] = $"{_dnsReplyCodeReservedData[5]} - Reserved11Enum";
+        _dnsReplyCodeReservedLabels[6] = $"{_dnsReplyCodeReservedData[6]} - Reserved12Enum";
+        _dnsReplyCodeReservedLabels[7] = $"{_dnsReplyCodeReservedData[6]} - Reserved13Enum";
+        _dnsReplyCodeReservedLabels[8] = $"{_dnsReplyCodeReservedData[6]} - Reserved14Enum";
+        _dnsReplyCodeReservedLabels[9] = $"{_dnsReplyCodeReservedData[7]} - Reserved15Enum";
+    }
+
+    private void SetDnsRecourceRecordData()
+    {
+        _dnsRecourseRecordData[0] = DnsData.Sum(x => x.Questions.Count());
+        _dnsRecourseRecordData[1] = DnsData.Sum(x => x.Answers.Count());
+        _dnsRecourseRecordData[2] = DnsData.Sum(x => x.Authorities.Count());
+        _dnsRecourseRecordData[3] = DnsData.Sum(x => x.Additional.Count());
+
+        _dnsRecourseRecordLabels[0] = $"{_dnsRecourseRecordData[0]} - Questions";
+        _dnsRecourseRecordLabels[1] = $"{_dnsRecourseRecordData[1]} - Answers";
+        _dnsRecourseRecordLabels[2] = $"{_dnsRecourseRecordData[2]} - Authorities";
+        _dnsRecourseRecordLabels[3] = $"{_dnsRecourseRecordData[3]} - Additional";
+    }
+
+    private void SetDnsOpCodeData()
+    {
+        _dnsOpCodeData[0] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.QueryEnum);
+        _dnsOpCodeData[1] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.IQueryEnum);
+        _dnsOpCodeData[2] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.StatusEnum);
+        _dnsOpCodeData[3] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.NotifyEnum);
+        _dnsOpCodeData[4] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.UpdateEnum);
+        _dnsOpCodeData[5] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.DNSStatefulOperationsEnum);
+        _dnsOpCodeData[6] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned2Enum or 
+            DnsFlags.OpCodeEnum.Unassigned7Enum or
+            DnsFlags.OpCodeEnum.Unassigned8Enum or
+            DnsFlags.OpCodeEnum.Unassigned9Enum or
+            DnsFlags.OpCodeEnum.Unassigned10Enum or
+            DnsFlags.OpCodeEnum.Unassigned11Enum or
+            DnsFlags.OpCodeEnum.Unassigned12Enum or
+            DnsFlags.OpCodeEnum.Unassigned13Enum or
+            DnsFlags.OpCodeEnum.Unassigned14Enum or
+            DnsFlags.OpCodeEnum.Unassigned15Enum
+            );
+
+        _dnsOpCodeLabels[0] = $"{_dnsOpCodeData[0]} - Query";
+        _dnsOpCodeLabels[1] = $"{_dnsOpCodeData[1]} - IQuery";
+        _dnsOpCodeLabels[2] = $"{_dnsOpCodeData[2]} - Status";
+        _dnsOpCodeLabels[3] = $"{_dnsOpCodeData[3]} - Notify";
+        _dnsOpCodeLabels[4] = $"{_dnsOpCodeData[4]} - Update";
+        _dnsOpCodeLabels[5] = $"{_dnsOpCodeData[5]} - DNSStatefulOperations";
+        _dnsOpCodeLabels[6] = $"{_dnsOpCodeData[6]} - Unassigned x";
+    }
+
+    private void SetDnsOpCodeUnassignedData()
+    {
+        _dnsOpCodeUnassignedData[0] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned2Enum);
+        _dnsOpCodeUnassignedData[1] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned7Enum);
+        _dnsOpCodeUnassignedData[2] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned8Enum);
+        _dnsOpCodeUnassignedData[3] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned9Enum);
+        _dnsOpCodeUnassignedData[4] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned10Enum);
+        _dnsOpCodeUnassignedData[5] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned11Enum);
+        _dnsOpCodeUnassignedData[6] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned12Enum);
+        _dnsOpCodeUnassignedData[7] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned13Enum);
+        _dnsOpCodeUnassignedData[8] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned14Enum);
+        _dnsOpCodeUnassignedData[9] = DnsData.Count(x => x.Flags.OpCode is DnsFlags.OpCodeEnum.Unassigned15Enum);
+
+        _dnsOpCodeUnassignedLabels[0] = $"{_dnsOpCodeUnassignedData[0]} - Unassigned 2";
+        _dnsOpCodeUnassignedLabels[1] = $"{_dnsOpCodeUnassignedData[1]} - Unassigned 7";
+        _dnsOpCodeUnassignedLabels[2] = $"{_dnsOpCodeUnassignedData[2]} - Unassigned 8";
+        _dnsOpCodeUnassignedLabels[3] = $"{_dnsOpCodeUnassignedData[3]} - Unassigned 9";
+        _dnsOpCodeUnassignedLabels[4] = $"{_dnsOpCodeUnassignedData[4]} - Unassigned 10";
+        _dnsOpCodeUnassignedLabels[5] = $"{_dnsOpCodeUnassignedData[5]} - Unassigned 11";
+        _dnsOpCodeUnassignedLabels[6] = $"{_dnsOpCodeUnassignedData[6]} - Unassigned 12";
+        _dnsOpCodeUnassignedLabels[7] = $"{_dnsOpCodeUnassignedData[7]} - Unassigned 13";
+        _dnsOpCodeUnassignedLabels[8] = $"{_dnsOpCodeUnassignedData[8]} - Unassigned 14";
+        _dnsOpCodeUnassignedLabels[9] = $"{_dnsOpCodeUnassignedData[9]} - Unassigned 15";
+    }
+
+    private void SetFlagsData()
+    {
+        FlagsData[0] = new ChartSeries()
+        {
+            Name = "True", Data = new double[]
+            {
+                DnsData.Count(x => x.Flags.Authoritative == true),
+                DnsData.Count(x => x.Flags.Truncated == true),
+                DnsData.Count(x => x.Flags.RecursionDesired == true),
+                DnsData.Count(x => x.Flags.RecursionAvailable == true),
+                DnsData.Count(x => x.Flags.AnswerAuthenticated == true),
+                DnsData.Count(x => x.Flags.NonAuthenticatedData == true)
+            }
+        };
+        FlagsData[1] = new ChartSeries()
+        {
+            Name = "False", Data = new double[]
+            {
+                DnsData.Count(x => x.Flags.Authoritative == false),
+                DnsData.Count(x => x.Flags.Truncated == false),
+                DnsData.Count(x => x.Flags.RecursionDesired == false),
+                DnsData.Count(x => x.Flags.RecursionAvailable == false),
+                DnsData.Count(x => x.Flags.AnswerAuthenticated == false),
+                DnsData.Count(x => x.Flags.NonAuthenticatedData == false)
+            }
+        };
+    }
+
+    private List<long> GetListOfDates()
+    {
+        List<long> dateList = new List<long>();
+        foreach (var item in DnsData)
+        {
+            dateList.Add(item.Timestamp ?? DateTime.UnixEpoch.Ticks);
+        }
+        return dateList;
+    }
+
+}

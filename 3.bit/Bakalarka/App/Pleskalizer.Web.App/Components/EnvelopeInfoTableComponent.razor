@@ -1,0 +1,93 @@
+﻿@using IO.Swagger.Models
+<MudTable Items="EnvelopeDetailList" FixedHeader="true" HorizontalScrollbar="true" Dense="true" Hover="true" Bordered="true" SortLabel="Sort By" Elevation="0">
+    <HeaderContent>
+        <MudTh>Address from</MudTh>
+        <MudTh>Address To</MudTh>
+        <MudTh>Reply to</MudTh>
+        <MudTh>Cc</MudTh>
+        <MudTh>Bcc</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Address A: ">@context.AddressFrom</MudTd>
+        <MudTd DataLabel="Address B: ">@context.AddressTo</MudTd>
+        <MudTd DataLabel="Protocol L3: ">@context.ReplyTo</MudTd>
+        <MudTd DataLabel="Capture ID: ">@context.Cc</MudTd>
+        <MudTd DataLabel="Capture ID: ">@context.Bcc</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+
+    [Parameter, EditorRequired]
+    public List<string> AddressFrom { get; set; } = null!;
+    
+    [Parameter, EditorRequired]
+    public List<string> AddressTo { get; set; } = null!;
+    
+    [Parameter, EditorRequired]
+    public List<string> ReplyTo { get; set; } = null!;
+    
+    [Parameter, EditorRequired]
+    public List<string> Cc { get; set; } = null!;
+    
+    [Parameter, EditorRequired]
+    public List<string> Bcc { get; set; } = null!;
+    
+    private List<EnvelopeDetail> EnvelopeDetailList { get; set; } = new List<EnvelopeDetail>();
+
+    protected override void OnInitialized()
+    {
+        CreateEnvelopeDetailList();
+    }
+    
+    private class EnvelopeDetail
+    {
+        public string AddressFrom { get; set; } = String.Empty;
+        public string AddressTo { get; set; } = String.Empty;
+        public string ReplyTo { get; set; } = String.Empty;
+        public string Cc { get; set; } = String.Empty;
+        public string Bcc { get; set; } = String.Empty;
+    }
+
+    private void CreateEnvelopeDetailList()
+    {
+        
+        int i = 0;
+        var keepAdding = true;
+        while (keepAdding)
+        {
+            var envelopeDetail = new EnvelopeDetail();
+            keepAdding = false;
+            if (AddressFrom != null && i < AddressFrom.Count)
+            {
+                envelopeDetail.AddressFrom = AddressFrom[i];
+                keepAdding = true;
+            }
+      
+            if (AddressTo != null && i < AddressTo.Count)
+            {
+                envelopeDetail.AddressTo = AddressTo[i];
+                keepAdding = true;
+            }
+            if (ReplyTo != null && i < ReplyTo.Count)
+            {
+                envelopeDetail.ReplyTo = ReplyTo[i];
+                keepAdding = true;
+            }
+            if (Cc != null && i < Cc.Count)
+            {
+                envelopeDetail.Cc = Cc[i];
+                keepAdding = true;
+            }
+            if (Bcc != null && i < Bcc.Count)
+            {
+                envelopeDetail.Bcc = Bcc[i];
+                keepAdding = true;
+            }
+            EnvelopeDetailList.Add(envelopeDetail);
+            i++;
+        }
+        EnvelopeDetailList.RemoveAt(EnvelopeDetailList.Count - 1);
+    }
+
+}

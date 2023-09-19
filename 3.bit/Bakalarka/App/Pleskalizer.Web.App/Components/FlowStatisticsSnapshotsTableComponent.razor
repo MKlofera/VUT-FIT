@@ -1,0 +1,131 @@
+﻿@using IO.Swagger.Models
+
+<section>
+
+
+    <MudGrid>
+        <MudItem>
+            <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled" Class="mb-3">Columns</MudButton>
+        </MudItem>
+    </MudGrid>
+
+    <MudDataGrid Items="@FlowStatistics" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" @ref="Table">
+        <Columns>
+            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.FirstSeenTimestampTicks ?? default(long)).ToLocalTime()" Title="From" Hideable="true" ShowColumnOptions="true"/>
+            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.LastSeenTimestampTicks ?? default(long)).ToLocalTime()" Title="To" Hideable="true" ShowColumnOptions="true"/>
+            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.UpdatedAtTicks ?? default(long)).ToLocalTime()" Title="Updated on" Hideable="true" ShowColumnOptions="true"/>
+            <PropertyColumn Property="x => x.ProcessedFrames" Title="Processed frames" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_processedFramesAggregation"/>
+            <PropertyColumn Property="x => x.ProcessedHeaderBytes" Title="Processed header bytes" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_processedHeaderBytesAggregation"/>
+            <PropertyColumn Property="x => x.ProcessedPayloadBytes" Title="Processed payload bytes" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_processedPayloadBytesAggregation"/>
+            <PropertyColumn Property="x => x.MalformedFrames" Title="Malformed frames" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_malformedFramesAggregation"/>
+            <PropertyColumn Property="x => x.MalformedBytes" Title="Malformed bytes" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_malformedBytesAggregation"/>
+            <PropertyColumn Property="x => x.DiscardedFrames" Title="Discarded frames" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_discardedFramesAggregation"/>
+            <PropertyColumn Property="x => x.DiscardedBytes" Title="Discarded bytes" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_discardedBytesAggregation"/>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="FlowStatisticsSnapshotDTO"/>
+        </PagerContent>
+    </MudDataGrid>
+    <MudExpansionPanels>
+        <MudExpansionPanel Text="Graphs" Class="my-3">
+            @if (FlowStatistics != null)
+            {
+                <FlowStatisticsGraphs FlowStatistics="FlowStatistics"></FlowStatisticsGraphs>
+            }
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+</section>
+
+@code {
+
+    [Parameter]
+    public List<FlowStatisticsSnapshotDTO> FlowStatistics { get; set; }
+
+    private MudDataGrid<FlowStatisticsSnapshotDTO> Table { get; set; } = null!;
+
+
+    AggregateDefinition<FlowStatisticsSnapshotDTO> _processedFramesAggregation = new AggregateDefinition<FlowStatisticsSnapshotDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.ProcessedFrames)) ?? 0, 2);
+            var min = x.Min(z => z.ProcessedFrames);
+            var max = x.Max(z => z.ProcessedFrames);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    AggregateDefinition<FlowStatisticsSnapshotDTO> _processedHeaderBytesAggregation = new AggregateDefinition<FlowStatisticsSnapshotDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.ProcessedHeaderBytes)) ?? 0, 2);
+            var min = x.Min(z => z.ProcessedHeaderBytes);
+            var max = x.Max(z => z.ProcessedHeaderBytes);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    AggregateDefinition<FlowStatisticsSnapshotDTO> _processedPayloadBytesAggregation = new AggregateDefinition<FlowStatisticsSnapshotDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.ProcessedPayloadBytes)) ?? 0, 2);
+            var min = x.Min(z => z.ProcessedPayloadBytes);
+            var max = x.Max(z => z.ProcessedPayloadBytes);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    AggregateDefinition<FlowStatisticsSnapshotDTO> _malformedFramesAggregation = new AggregateDefinition<FlowStatisticsSnapshotDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.MalformedFrames)) ?? 0, 2);
+            var min = x.Min(z => z.MalformedFrames);
+            var max = x.Max(z => z.MalformedFrames);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    AggregateDefinition<FlowStatisticsSnapshotDTO> _malformedBytesAggregation = new AggregateDefinition<FlowStatisticsSnapshotDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.MalformedBytes)) ?? 0, 2);
+            var min = x.Min(z => z.MalformedBytes);
+            var max = x.Max(z => z.MalformedBytes);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    AggregateDefinition<FlowStatisticsSnapshotDTO> _discardedFramesAggregation = new AggregateDefinition<FlowStatisticsSnapshotDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.DiscardedFrames)) ?? 0, 2);
+            var min = x.Min(z => z.DiscardedFrames);
+            var max = x.Max(z => z.DiscardedFrames);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    AggregateDefinition<FlowStatisticsSnapshotDTO> _discardedBytesAggregation = new AggregateDefinition<FlowStatisticsSnapshotDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.DiscardedBytes)) ?? 0, 2);
+            var min = x.Min(z => z.DiscardedBytes);
+            var max = x.Max(z => z.DiscardedBytes);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+}

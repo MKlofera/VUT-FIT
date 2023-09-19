@@ -1,0 +1,15 @@
+﻿@using Pleskalizer.Web.App.Shared
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <img class="row mx-auto mt-3" src="./Assets/Img/404.gif"/>
+            <MudAlert Severity="Severity.Error" Variant="Variant.Filled" ContentAlignment="HorizontalAlignment.Center"  Class="m-3">404 unknown page</MudAlert>
+        </LayoutView>
+    </NotFound>
+</Router>

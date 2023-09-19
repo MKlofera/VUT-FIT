@@ -1,0 +1,43 @@
+﻿@using IO.Swagger.Models
+@if (Attachments != null && Attachments.Count > 0)
+{
+    <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@AttachmentsData" InputLabels="@AttachmentsLabels">
+        <CustomGraphics>
+            <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+            <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@AttachmentsData.Sum().ToString()</text>
+        </CustomGraphics>
+    </MudChart>
+    
+}
+
+@code {
+    [Parameter]
+    public List<ImfAttachmentDTO>? Attachments { get; set; }
+    
+    private double[]? AttachmentsData { get; set; }
+    private string[]? AttachmentsLabels { get; set; }
+    
+    protected override void OnParametersSet()
+    {
+        if (Attachments is null) return;
+        SetAttachmentsData();
+    }
+
+    private void SetAttachmentsData()
+    {
+        var attachments = Attachments
+            .GroupBy(x => x.ContentType)
+            .OrderByDescending(g => g.Count())
+            .Select(g => new { Sender = g.Key, Occurrences = g.Count() })
+            .ToList();
+
+        AttachmentsData = new double[attachments.Count];
+        AttachmentsLabels = new string[attachments.Count];
+
+        for (int i = 0; i < attachments.Count; i++)
+        {
+            AttachmentsData[i] = attachments[i].Occurrences;
+            AttachmentsLabels[i] = $"{AttachmentsData[i]}x - {attachments[i].Sender}";
+        }
+    }
+}

@@ -1,0 +1,319 @@
+﻿@using IO.Swagger.Models
+@using Blazored.LocalStorage
+@using Pleskalizer.Web.App.Components.Charts
+
+<MudGrid Class="d-flex align-center mb-3">
+    <MudItem xs="12" sm="8" md="8" lg="8" xl="8">
+        <MudTextField @bind-Value="SearchedSender" Label="Type sender to see more information" Variant="Variant.Text"></MudTextField>
+    </MudItem>
+    <MudItem xs="12" sm="4" md="4" lg="4" xl="4">
+        <MudButton @onclick="GetSendersData" Color="Color.Primary" Variant="Variant.Filled">Add</MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (Data != null && SearchedSender != String.Empty)
+{
+    if (Data.Exists(x => x.Envelope.Sender == SearchedSender))
+    {
+        if (SendersData == null)
+        {
+            <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+        }
+        else
+        {
+            <MudText Typo="Typo.h4" Class="mb-3">Sender: @SearchedSender</MudText>
+
+            <MudExpansionPanels MultiExpansion="true" Elevation="2">
+                <MudExpansionPanel Text="@("Subjects - " + SendersData.Select(x=>x.Envelope.Subject).Count())">
+                    <MudDataGrid Items="@SendersSubjects" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(SubjectDto item) => { SelectedItemChangedHandler(item.MessageId); }">
+                        <Columns>
+                            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.SentOn ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.Subject" Title="Address from" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.MessageId" Title="Message ID" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="SubjectDto"/>
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="@("Addresses from - " + SendersData.Sum(x => x.Envelope.AddressesFrom.Count).ToString())">
+                    <MudDataGrid Items="@SendersAddressesFrom" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(AddressDto item) => { SelectedItemChangedHandler(item.MessageId); }">
+                        <Columns>
+                            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.SentOn ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.Address" Title="Address from" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.MessageId" Title="Message ID" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="AddressDto"/>
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="@("Addresses to - " + SendersData.Sum(x => x.Envelope.AddressesTo.Count).ToString())">
+                    <MudDataGrid Items="@SendersAddressesTo" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(AddressDto item) => { SelectedItemChangedHandler(item.MessageId); }">
+                        <Columns>
+                            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.SentOn ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.Address" Title="Address from" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.MessageId" Title="Message ID" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="AddressDto"/>
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="@("Cc - "+SendersData.Sum(x => x.Envelope.Cc.Count).ToString())">
+                    <MudDataGrid Items="@SendersCc" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(AddressDto item) => { SelectedItemChangedHandler(item.MessageId); }">
+                        <Columns>
+                            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.SentOn ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.Address" Title="Address from" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.MessageId" Title="Message ID" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="AddressDto"/>
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="@("Bcc - " + SendersData.Sum(x => x.Envelope.Bcc.Count).ToString())">
+                    <MudDataGrid Items="@SendersBcc" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(AddressDto item) => { SelectedItemChangedHandler(item.MessageId); }">
+                        <Columns>
+                            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.SentOn ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.Address" Title="Address from" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.MessageId" Title="Message ID" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="AddressDto"/>
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="@("Attachments - " + SendersData.Sum(x => x.Attachments.Count).ToString())">
+                    <MostOccurrenceDonutChartComponent Title="Most occurred attachments" Data="@SendersData.SelectMany(x=>x.Attachments.Select(y=>y.ContentType)).ToList()"/>
+                    <MudDataGrid Items="@SendersAttachments" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(AttachmentsDto item) => { SelectedItemChangedHandler(item.MessageId); }">
+                        <Columns>
+                            <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.SentOn ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.Filename" Title="Filename" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.ContentType" Title="Content type" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.ContentEncoding" Title="Content encoding" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.Path" Title="Path" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.MessageId" Title="Message ID" Hideable="true" ShowColumnOptions="true"/>
+                            <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+                        </Columns>
+                        <PagerContent>
+                            <MudDataGridPager T="AttachmentsDto"/>
+                        </PagerContent>
+                    </MudDataGrid>
+                </MudExpansionPanel>
+                
+            </MudExpansionPanels>
+        }
+    }
+    else
+    {
+        <MudText>No sender with this name</MudText>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public Guid? CaseId { get; set; }
+
+    [Parameter]
+    public List<SmtpClientMessageDTO>? Data { get; set; }
+
+    private List<SmtpClientMessageDTO>? SendersData { get; set; }
+
+    private List<AddressDto>? SendersAddressesFrom { get; set; }
+    private List<AddressDto>? SendersAddressesTo { get; set; }
+    private List<AddressDto>? SendersCc { get; set; }
+    private List<AddressDto>? SendersBcc { get; set; }
+
+    private List<SubjectDto>? SendersSubjects { get; set; }
+
+    private List<AttachmentsDto>? SendersAttachments { get; set; }
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private string SearchedSender { get; set; } = String.Empty;
+
+    protected override void OnParametersSet()
+    {
+        GetSendersData();
+    }
+
+    private async void SelectedItemChangedHandler(string messageId)
+    {
+        var url = $"/smtp-client/{CaseId}/detail";
+        var smtpClientMessage = Data!.FirstOrDefault(x => x.Envelope.MessageId == messageId);
+        await LocalStorage.SetItemAsync("SmtpClientMessageDTODetail", smtpClientMessage);
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private void GetSendersData()
+    {
+        if (SearchedSender == String.Empty) return;
+
+        SendersData = new List<SmtpClientMessageDTO>();
+        SendersData.AddRange(Data.Where(x => x.Envelope.Sender == SearchedSender));
+
+        SetSendersAddressesFrom();
+        SetSendersAddressesTo();
+        SetSendersCc();
+        SetSendersBcc();
+
+        SetSendersSubjects();
+
+        SetSendersAttachments();
+    }
+
+    private void SetSendersAddressesFrom()
+    {
+        SendersAddressesFrom = new List<AddressDto>();
+        foreach (var sendersMessage in SendersData!)
+        {
+            foreach (var addressFrom in sendersMessage.Envelope.AddressesFrom)
+            {
+                AddressDto addressDto = new AddressDto(sendersMessage.Envelope.DateTicks, addressFrom, sendersMessage.Envelope.MessageId, sendersMessage.SessionId);
+                SendersAddressesFrom.Add(addressDto);
+            }
+        }
+    }
+
+    private void SetSendersAddressesTo()
+    {
+        SendersAddressesTo = new List<AddressDto>();
+        foreach (var sendersMessage in SendersData!)
+        {
+            foreach (var addressTo in sendersMessage.Envelope.AddressesTo)
+            {
+                AddressDto addressDto = new AddressDto(sendersMessage.Envelope.DateTicks, addressTo, sendersMessage.Envelope.MessageId, sendersMessage.SessionId);
+                SendersAddressesTo.Add(addressDto);
+            }
+        }
+    }
+
+    private void SetSendersCc()
+    {
+        SendersCc = new List<AddressDto>();
+        foreach (var sendersMessage in SendersData!)
+        {
+            foreach (var addressCc in sendersMessage.Envelope.Cc)
+            {
+                AddressDto addressDto = new AddressDto(sendersMessage.Envelope.DateTicks, addressCc, sendersMessage.Envelope.MessageId, sendersMessage.SessionId);
+                SendersCc.Add(addressDto);
+            }
+        }
+    }
+
+    private void SetSendersBcc()
+    {
+        SendersBcc = new List<AddressDto>();
+        foreach (var sendersMessage in SendersData!)
+        {
+            foreach (var bcc in sendersMessage.Envelope.Bcc)
+            {
+                AddressDto addressDto = new AddressDto(sendersMessage.Envelope.DateTicks, bcc, sendersMessage.Envelope.MessageId, sendersMessage.SessionId);
+                SendersBcc.Add(addressDto);
+            }
+        }
+    }
+
+    private void SetSendersSubjects()
+    {
+        SendersSubjects = new List<SubjectDto>();
+        foreach (var sendersMessage in SendersData!)
+        {
+            SubjectDto subjectDto = new SubjectDto(sendersMessage.Envelope.DateTicks, sendersMessage.Envelope.Subject, sendersMessage.Envelope.MessageId, sendersMessage.SessionId);
+            SendersSubjects.Add(subjectDto);
+        }
+    }
+
+    private void SetSendersAttachments()
+    {
+        SendersAttachments = new List<AttachmentsDto>();
+        foreach (var sendersMessage in SendersData!)
+        {
+            foreach (var attachment in sendersMessage.Attachments)
+            {
+                AttachmentsDto attachmentsDto = new AttachmentsDto(sendersMessage.Envelope.DateTicks, attachment.Path, attachment.Filename, attachment.ContentType, attachment.ContentEncoding, sendersMessage.Envelope.MessageId, sendersMessage.SessionId);
+                SendersAttachments.Add(attachmentsDto);
+            }
+        }
+    }
+
+    private List<long> GetListOfDates()
+    {
+        List<long> dateList = new List<long>();
+        foreach (var item in Data)
+        {
+            dateList.Add(item.Envelope.DateTicks ?? DateTime.UnixEpoch.Ticks);
+        }
+        return dateList;
+    }
+
+    private class AddressDto
+    {
+        public long? SentOn { get; set; }
+        public string? Address { get; set; }
+        public string? MessageId { get; set; }
+        public Guid? SessionId { get; set; }
+
+        public AddressDto(long? sentOn, string? address, string? messageId, Guid? sessionId)
+        {
+            SentOn = sentOn;
+            Address = address;
+            MessageId = messageId;
+            SessionId = sessionId;
+        }
+    }
+
+    private class SubjectDto
+    {
+        public long? SentOn { get; set; }
+        public string? Subject { get; set; }
+        public string? MessageId { get; set; }
+        public Guid? SessionId { get; set; }
+
+        public SubjectDto(long? sentOn, string? subject, string? messageId, Guid? sessionId)
+        {
+            SentOn = sentOn;
+            Subject = subject;
+            MessageId = messageId;
+            SessionId = sessionId;
+        }
+    }
+
+    private class AttachmentsDto
+    {
+        public long? SentOn { get; set; }
+        public string? Path { get; set; }
+        public string? Filename { get; set; }
+        public string? ContentType { get; set; }
+        public string? ContentEncoding { get; set; }
+        public string? MessageId { get; set; }
+        public Guid? SessionId { get; set; }
+
+        public AttachmentsDto(long? sentOn, string? path, string? filename, string? contentType, string? contentEncoding, string? messageId, Guid? sessionId)
+        {
+            SentOn = sentOn;
+            Path = path;
+            Filename = filename;
+            ContentType = contentType;
+            ContentEncoding = contentEncoding;
+            MessageId = messageId;
+            SessionId = sessionId;
+        }
+    }
+
+}

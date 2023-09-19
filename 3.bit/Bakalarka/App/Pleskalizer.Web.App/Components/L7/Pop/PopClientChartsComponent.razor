@@ -1,0 +1,40 @@
+﻿@using IO.Swagger.Models
+
+@if (Data is not null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">Commands in time</MudText>
+            <PopClientCommandsTimelineChartComponent Data="Data"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">All messages in time</MudText>
+            <TimelineComunicationChartComponent Data="GetListOfDates()"></TimelineComunicationChartComponent>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+            <MostOccurrenceDonutChartComponent Title="Most occured commands" Data="@Data.Select(x=>x.Command.ToString()).ToList()"/>
+        </MudItem>
+
+    </MudGrid>
+}
+else
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+}
+
+@code {
+
+    [Parameter]
+    public List<PopClientMessageDTO>? Data { get; set; }
+
+    private List<long> GetListOfDates()
+    {
+        List<long> dateList = new List<long>();
+        foreach (var item in Data!)
+        {
+            dateList.Add(item.Timestamp ?? DateTime.UnixEpoch.Ticks);
+        }
+        return dateList;
+    }
+
+}

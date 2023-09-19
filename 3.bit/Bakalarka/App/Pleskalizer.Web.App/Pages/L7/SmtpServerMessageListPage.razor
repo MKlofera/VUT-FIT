@@ -1,0 +1,171 @@
+﻿@page "/smtp-server/{CaseId:guid}/list"
+@using IO.Swagger.Models
+@using Pleskalizer.Web.BL.Facades.L7
+@using Pleskalizer.Web.App.Components.L7.Smtp
+@using Microsoft.AspNetCore.Components
+
+<PageTitle>SMTP server messages</PageTitle>
+
+<section>
+    <MudGrid Class="d-flex justify-space-between align-center mb-5">
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h3" GutterBottom="true">SMTP Server</MudText>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="8" lg="4" xl="4">
+            <MudTextField @bind-Value="SearchSessionValue" Label="Search" Placeholder="search session" Variant="Variant.Text" FullWidth="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="4" lg="2" xl="2">
+            <MudButton @onclick="GetMessagesAsync" Variant="Variant.Filled" Color="Color.Primary">Search</MudButton>
+            <MudButton @onclick="CancelSessionSearchHandlerAsync" Variant="Variant.Filled" Color="Color.Error">Cancel</MudButton>
+        </MudItem>
+    </MudGrid>
+</section>
+
+@if (SmtpServerMessage is null)
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+}
+else
+{
+    <section>
+        <MudGrid>
+            <MudItem>
+                <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled" Class="mb-2">Columns</MudButton>
+            </MudItem>
+        </MudGrid>
+        <MudDataGrid Items="@SmtpServerMessage.Items" EditMode="@DataGridEditMode.Cell" Dense="true" Striped="true" Hover="true" Bordered="true" Groupable="true" Filterable="true" @ref="Table">
+            <Columns>
+                <HierarchyColumn T="SmtpServerMessageDTO"/>
+                <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.Timestamp ?? default(long)).ToLocalTime()" Title="Date" Hideable="true"/>
+                <PropertyColumn Property="x => x.ReplyCode" Title="Reply code" Hideable="true"/>
+                <PropertyColumn Property="x => x.Parameters.Count" Title="Parameters" Hideable="true" AggregateDefinition="_parametersAggregation"/>
+                <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true"/>
+            </Columns>
+            <ChildRowContent>
+                <MudCard>
+                    <MudCardHeader>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">Parameters</MudText>
+                        </CardHeaderContent>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudList Dense="true">
+                            @foreach (var param in context.Item.Parameters)
+                            {
+                                <MudListItem Text="@param"/>
+                            }
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
+            </ChildRowContent>
+        </MudDataGrid>
+    </section>
+
+    <section>
+        <Pagination @bind-PageSize="PageSize" @bind-PageState="PageState"></Pagination>
+    </section>
+
+    if (SmtpServerMessage.Items.Count > 0)
+    {
+        <section class="my-3">
+            <MudExpansionPanels Elevation="2">
+                <MudExpansionPanel Text="Charts">
+                    <SmtpServerChartsComponent Data="SmtpServerMessage.Items"/>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </section>
+    }
+}
+
+
+
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private SmtpFacade SmtpFacade { get; set; } = null!;
+
+    private SmtpServerMessageDTOPageQueryResultDTO? SmtpServerMessage { get; set; }
+
+    private MudDataGrid<SmtpServerMessageDTO> Table { get; set; } = null!;
+
+    private string SearchSessionValue { get; set; } = String.Empty;
+    private int _pageSize = 20;
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    private int _pageState;
+
+    private int PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessagesAsync();
+        StateHasChanged();
+    }
+
+    private async Task GetMessagesAsync()
+    {
+        if (SearchSessionValue == String.Empty)
+        {
+            byte[] pageState = IntToByteArr(PageState);
+            SmtpServerMessage = await SmtpFacade.GetAllServerMessages(CaseId, pageState, PageSize);
+            StateHasChanged();
+        }
+        else
+        {
+            await GetSessionResultsAsync();
+        }
+    }
+
+    private async Task GetSessionResultsAsync()
+    {
+        byte[] pageState = IntToByteArr(PageState);
+        SmtpServerMessage = await SmtpFacade.GetAllServerMessagesWithSession(CaseId, Guid.Parse(SearchSessionValue), pageState, PageSize);
+        StateHasChanged();
+    }
+
+    private async Task CancelSessionSearchHandlerAsync()
+    {
+        SearchSessionValue = String.Empty;
+        await GetMessagesAsync();
+    }
+
+    private byte[] IntToByteArr(int number)
+    {
+        return BitConverter.GetBytes(number);
+    }
+
+    readonly AggregateDefinition<SmtpServerMessageDTO> _parametersAggregation = new AggregateDefinition<SmtpServerMessageDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Parameters.Count)), 2);
+            var min = x.Min(z => z.Parameters.Count);
+            var max = x.Max(z => z.Parameters.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+}

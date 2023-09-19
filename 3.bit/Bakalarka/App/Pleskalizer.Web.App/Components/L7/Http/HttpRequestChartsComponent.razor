@@ -1,0 +1,87 @@
+﻿@using IO.Swagger.Models
+@if (Data is not null)
+{
+    <MudGrid>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6" Class="mx-auto">Methods</MudText>
+            <MudPaper Class="pa-4 m-2">
+                <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="300px" Height="300px" InputData="@_methodsData" InputLabels="@_methodsLabels">
+                    <CustomGraphics>
+                        <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                        <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_methodsData.Sum().ToString()</text>
+                    </CustomGraphics>
+                </MudChart>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <HttpHeaderContentTypeChartComponent Data="Data.SelectMany(x => x.Headers).ToList()"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">Methods in time</MudText>
+            <HttpRequestsMethodTimelineChartComponent Data="Data"/>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">All messages in time</MudText>
+            <TimelineComunicationChartComponent Data="GetListOfDates()"></TimelineComunicationChartComponent>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+            <MudText Typo="Typo.h6">Uri in time</MudText>
+            <HttpRequestUriTimelineChartComponent Data="Data"/>
+        </MudItem>
+    </MudGrid>
+}
+else
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+}
+
+@code {
+
+    [Parameter]
+    public ICollection<HttpRequestDTO>? Data { get; set; } = null;
+
+    private double[] _methodsData = new double[9];
+    private string[] _methodsLabels = new string[9];
+
+    protected override void OnParametersSet()
+    {
+        if (Data is null) return;
+
+        SetMethodsData();
+    }
+
+    private void SetMethodsData()
+    {
+        _methodsData[0] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.OPTIONSEnum);
+        _methodsData[1] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.GETEnum);
+        _methodsData[2] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.HEADEnum);
+        _methodsData[3] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.POSTEnum);
+        _methodsData[4] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.PUTEnum);
+        _methodsData[5] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.DELETEEnum);
+        _methodsData[6] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.TRACEEnum);
+        _methodsData[7] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.CONNECTEnum);
+        _methodsData[8] = Data.Count(x => x.Method == HttpRequestDTO.MethodEnum.PATCHEnum);
+
+        _methodsLabels[0] = $"{_methodsData[0]} - OPTIONS";
+        _methodsLabels[1] = $"{_methodsData[1]} - GET";
+        _methodsLabels[2] = $"{_methodsData[2]} - HEAD";
+        _methodsLabels[3] = $"{_methodsData[3]} - POST";
+        _methodsLabels[4] = $"{_methodsData[4]} - PUT";
+        _methodsLabels[5] = $"{_methodsData[5]} - DELETE";
+        _methodsLabels[6] = $"{_methodsData[6]} - TRACE";
+        _methodsLabels[7] = $"{_methodsData[6]} - CONNECT";
+        _methodsLabels[8] = $"{_methodsData[6]} - PATCH";
+    }
+
+    private List<long> GetListOfDates()
+    {
+        List<long> dateList = new List<long>();
+        foreach (var item in Data)
+        {
+            dateList.Add(item.Timestamp ?? DateTime.UnixEpoch.Ticks);
+        }
+        return dateList;
+    }
+
+}

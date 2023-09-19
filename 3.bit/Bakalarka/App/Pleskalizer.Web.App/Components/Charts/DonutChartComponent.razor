@@ -1,0 +1,68 @@
+﻿@if (ChartData != null && ChartLabels != null)
+{
+    if (Title != String.Empty)
+    {
+        <MudText Typo="Typo.h6" Class="mx-auto">@Title</MudText>
+    }
+    if (ChartData.Length > 0)
+    {
+        <MudPaper Class="pa-4">
+            <MudChart ChartType="ChartType.Donut" Width="300px" Height="300px" InputData="@ChartData" InputLabels="@ChartLabels" LegendPosition="Position.Right">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                    <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@ChartData.Sum().ToString()</text>
+                </CustomGraphics>
+            </MudChart>
+        </MudPaper>
+    }
+    else
+    {
+        <MudText Typo="Typo.h6" Class="mx-auto">No occurrences</MudText>
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public List<string>? Data { get; set; }
+    [Parameter]
+    public string Title { get; set; } = String.Empty;
+    
+
+    private double[]? ChartData { get; set; }
+    private string[]? ChartLabels { get; set; }
+    
+
+    protected override void OnParametersSet()
+    {
+        if (Data == null) return;
+
+        var groupedStrings = Data.GroupBy(s => s)
+            .Select(g => new { Key = g.Key, Count = g.Count() })
+            .OrderByDescending(g => g.Count);
+
+        ChartLabels = new string[groupedStrings.Count()];
+        ChartData = new double[groupedStrings.Count()];
+
+        for (int i = 0; i < groupedStrings.Count(); i++)
+        {
+            ChartLabels[i] = $"{groupedStrings.ElementAt(i).Count} - {groupedStrings.ElementAt(i).Key}";
+            ChartData[i] = groupedStrings.ElementAt(i).Count;
+        }
+        RemoveEnumSuffix();
+        StateHasChanged();
+    }
+
+    private void RemoveEnumSuffix()
+    {
+        for (int i = 0; i < ChartLabels.Length; i++)
+        {
+            if (ChartLabels[i].EndsWith("Enum"))
+            {
+                ChartLabels[i] = ChartLabels[i].Substring(0, ChartLabels[i].Length - 4);
+            }
+        }
+
+    }
+}

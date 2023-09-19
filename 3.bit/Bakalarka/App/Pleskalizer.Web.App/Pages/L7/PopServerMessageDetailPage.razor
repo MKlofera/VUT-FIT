@@ -1,0 +1,177 @@
+﻿@page "/pop-server/{CaseId:guid}/detail"
+@using IO.Swagger.Models
+@using System.Net
+@using Pleskalizer.Web.App.Extensions
+@using Blazored.LocalStorage
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+
+<PageTitle>POP - server message detail</PageTitle>
+
+<MudText Typo="Typo.h3" GutterBottom="true">POP - server message</MudText>
+
+<MudText Typo="Typo.caption">
+    Session Id:
+    @if (PopServerMessage.SessionId != null)
+    {
+        @PopServerMessage.SessionId
+    }
+    else
+    {
+        <b>---</b>
+    }
+</MudText>
+
+@* ------------------------------------- Headline section -------------------------------------  *@
+<section class="my-5">
+    <MudText Typo="Typo.body1">
+        <b>Processed on: </b>@(new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(PopServerMessage.Timestamp ?? default(long)).ToLocalTime())
+    </MudText>
+    <MudText Typo="Typo.body1">
+        <b>Desription: </b>
+        @PopServerMessage.Description
+    </MudText>
+    <MudText Typo="Typo.body1">
+        <b>Reply: </b>
+        @PopServerMessage.Reply?.GetDisplayName()
+    </MudText>
+    <MudExpansionPanels Elevation="1" MultiExpansion="true" Class="mt-3">
+        <MudExpansionPanel Text="Mail Path: ">
+            <MudText Typo="Typo.body1">@PopServerMessage.MailPath</MudText>
+        </MudExpansionPanel>
+        <MudExpansionPanel Text="Payload: ">
+            <MudText Typo="Typo.body1">
+                @PopServerMessage.Payload
+            </MudText>
+        </MudExpansionPanel>
+    </MudExpansionPanels>
+</section>
+
+@* ------------------------------------- Envelope section -------------------------------------  *@
+<section class="my-5">
+
+        <MudPaper Elevation="4" Class="py-8 px-10">
+            <MudText Typo="Typo.h6" class="mb-3">Envelope</MudText>
+
+            <MudText Typo="Typo.body1">
+                <b>Sent on: </b>
+                @if (PopServerMessage.Envelope.DateTicks != null)
+                {
+                    @(new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(PopServerMessage.Envelope.DateTicks ?? default(long)).ToLocalTime())
+                }
+                else
+                {
+                    <b>---</b>
+                }
+            </MudText>
+            <MudText Typo="Typo.body1">
+                <b>Subject: </b> @PopServerMessage.Envelope.Subject
+            </MudText>
+            <MudText Typo="Typo.body1">
+                <b>Sender: </b> @PopServerMessage.Envelope.Sender
+            </MudText>
+            <MudText Typo="Typo.body1">
+                <b>In reply to: </b> @PopServerMessage.Envelope.InReplyTo
+            </MudText>
+            <MudText Typo="Typo.body1">
+                <b>Message id: </b> @PopServerMessage.Envelope.MessageId
+            </MudText>
+            <MudExpansionPanels Elevation="2" MultiExpansion="true" Class="mt-3">
+                <MudExpansionPanel Text="Address from, Addres to, Reply to, Cc, Bcc" IsInitiallyExpanded="true">
+                   @if (PopServerMessage.Envelope.AddressesFrom == null)
+                    {
+                        <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+                    }
+                    else
+                    {
+                        <EnvelopeInfoTableComponent
+                            AddressFrom="@PopServerMessage.Envelope.AddressesFrom"
+                            AddressTo="@PopServerMessage.Envelope.AddressesTo" ReplyTo="@PopServerMessage.Envelope.ReplyTo"
+                            Cc="@PopServerMessage.Envelope.Cc" Bcc="@PopServerMessage.Envelope.Bcc">
+                        </EnvelopeInfoTableComponent>
+                    }
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudPaper>
+</section>
+
+@* ------------------------------------- Email section -------------------------------------  *@
+<section class="my-5">
+    <MudPaper Elevation="4" Class="py-8 px-10">
+        <MudExpansionPanels Elevation="2" MultiExpansion="true">
+
+            <MudText Typo="Typo.h6" class="mb-3">Email</MudText>
+            <MudExpansionPanel Text="Headers:" IsInitiallyExpanded="true">
+                <MudTable Items="PopServerMessage.Email.Headers" Dense="true" Hover="true" HorizontalScrollbar="true"
+                          SortLabel="Sort By" Elevation="0">
+                    <HeaderContent>
+                        <MudTh>
+                            <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<ImfHeaderDTO, object>(x => x.Name)">Name</MudTableSortLabel>
+                        </MudTh>
+                        <MudTh>
+                            <MudTableSortLabel SortBy="new Func<ImfHeaderDTO, object>(x => x.Value)">Value</MudTableSortLabel>
+                        </MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd DataLabel="Name: ">@context.Name</MudTd>
+                        <MudTd DataLabel="Value: ">@context.Value</MudTd>
+                    </RowTemplate>
+                </MudTable>
+            </MudExpansionPanel>
+            <MudExpansionPanel Text="Payload: ">
+                <MudText Typo="Typo.subtitle1">@PopServerMessage.Email.Payload</MudText>
+            </MudExpansionPanel>
+
+        </MudExpansionPanels>
+    </MudPaper>
+</section>
+
+@* ------------------------------------- Attachments section -------------------------------------  *@
+<section class="my-5">
+    <MudPaper Elevation="4" Class="py-8 px-10">
+        <MudText Typo="Typo.h6" class="mb-3">Attachments</MudText>
+        <MudTable Items="PopServerMessage.Attachments" Dense="true" Hover="true" HorizontalScrollbar="true"
+                  SortLabel="Sort By" Elevation="0">
+            <HeaderContent>
+                <MudTh>
+                    <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<ImfAttachmentDTO, object>(x => x.Filename)">Filename</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<ImfAttachmentDTO, object>(x => x.ContentType)">Content type</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<ImfAttachmentDTO, object>(x => x.Path)">Path</MudTableSortLabel>
+                </MudTh>
+                <MudTh>
+                    <MudTableSortLabel SortBy="new Func<ImfAttachmentDTO, object>(x => x.ContentEncoding)">Content encoding</MudTableSortLabel>
+                </MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Filename: ">@context.Filename</MudTd>
+                <MudTd DataLabel="Content type: ">@context.ContentType</MudTd>
+                <MudTd DataLabel="Path: ">@context.Path</MudTd>
+                <MudTd DataLabel="Content encoding: ">@context.ContentEncoding</MudTd>
+            </RowTemplate>
+        </MudTable>
+    </MudPaper>
+</section>
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+
+    private PopServerMessageDTO PopServerMessage { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        PopServerMessage = await LocalStorage.GetItemAsync<PopServerMessageDTO>("PopServerMessageDTODetail");
+        await LocalStorage.RemoveItemAsync("PopServerMessageDTODetail");
+
+    }
+
+}

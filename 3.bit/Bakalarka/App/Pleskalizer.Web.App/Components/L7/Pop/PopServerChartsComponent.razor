@@ -1,0 +1,39 @@
+﻿@using IO.Swagger.Models
+
+@if (Data is not null){
+        <MudGrid>
+            <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                <MostOccurrenceDonutChartComponent Title="Most occurred attachments" Data="@Data.SelectMany(x=>x.Attachments.Select(y=>y.ContentType)).ToList()"/>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                <MostOccurrenceDonutChartComponent Title="Most occurred senders" Data="@Data.Select(x=>x.Envelope.Sender).ToList()"/>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+                <MudText Typo="Typo.h6">Messages in time</MudText>
+                <PopServerSenderTimelineChartComponent Data="Data"/>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+                <MudText Typo="Typo.h6">All messages in time</MudText>
+                <TimelineComunicationChartComponent Data="GetListOfDates()"></TimelineComunicationChartComponent>
+            </MudItem>
+        </MudGrid>
+    }
+
+
+
+@code {
+    
+    [Parameter]
+    public List<PopServerMessageDTO>? Data { get; set; }
+    
+    private List<long> GetListOfDates()
+    {
+        List<long> dateList = new List<long>();
+        foreach (var item in Data!)
+        {
+            dateList.Add(item.Envelope.DateTicks ?? DateTime.UnixEpoch.Ticks);
+        }
+        return dateList;
+    }
+
+}

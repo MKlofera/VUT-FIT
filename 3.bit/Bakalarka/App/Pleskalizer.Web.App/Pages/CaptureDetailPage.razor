@@ -1,0 +1,96 @@
+﻿@page "/case/{CaseId:guid}/capture/{CaptureId:guid}"
+@using IO.Swagger.Models
+@using Pleskalizer.Web.BL.Facades
+@using System.Globalization
+
+
+<PageTitle>Cases</PageTitle>
+@if (CaptureDetail == null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+}
+else
+{
+    <MudText Typo="Typo.h3" GutterBottom="true">Capture URL: @CaptureDetail.Uri</MudText>
+    <MudGrid Class="align-center my-5">
+        <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
+            <MudDatePicker Label="Aggregate from" @bind-Date="AggregateFrom"/>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
+            <MudDatePicker Label="Aggregate to" @bind-Date="AggregateTo"/>
+        </MudItem>
+        <MudItem xs="6" sm="6" md="2" lg="2" xl="2">
+            <MudButton @onclick="SetDateQueryParamsForAggregation" Color="Color.Primary" Variant="Variant.Filled" FullWidth="true">Search</MudButton>
+        </MudItem>
+        <MudItem xs="6" sm="6" md="2" lg="2" xl="2">
+            <MudButton @onclick="RemoveDateQueryParamsForAggregation" Color="Color.Error" Variant="Variant.Filled" FullWidth="true">Cancel</MudButton>
+        </MudItem>
+    </MudGrid>
+    <MudText Typo="Typo.caption">Case Id: @CaseId.ToString()</MudText>
+    <br/>
+    <MudText Typo="Typo.caption">Capture Id: @CaptureDetail.CaptureId.ToString()</MudText>
+
+    @if (CaptureDetail.FlowStatisticsSnapshots.Count > 0)
+    {
+        <FlowStatisticsSnapshotsTableComponent FlowStatistics="@CaptureDetail.FlowStatisticsSnapshots"/>
+    }
+}
+
+@code{
+
+    [Parameter] public Guid CaseId { set; get; }
+
+    [Parameter] public Guid CaptureId { get; set; }
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "DateFrom")]
+    public string? DateFrom { get; set; }
+    
+    [Parameter]
+    [SupplyParameterFromQuery(Name = "DateTo")]
+    public string? DateTo { get; set; }
+
+    [Inject] private NavigationManager NavigationManager { get; set; } = null!;
+    [Inject] private CaptureFacade CaptureFacade { get; set; } = null!;
+    private CaptureConversationStatisticsDetailDTO CaptureDetail { get; set; } = new();
+
+    public DateTime? AggregateFrom { get; set; }
+    public DateTime? AggregateTo { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetData();
+    }
+
+    private async Task GetData()
+    {
+        if (DateFrom != null && DateTo != null)
+        {
+            var from = DateTime.ParseExact(DateFrom, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            var to = DateTime.ParseExact(DateTo, "yyyyMMddHHmmss", CultureInfo.InvariantCulture);
+            CaptureDetail = await CaptureFacade.GetByIdAggregated(CaseId, CaptureId,  from, to);
+        }
+        else
+        {
+            CaptureDetail = await CaptureFacade.GetById(CaseId, CaptureId);
+        }
+    }
+    private async Task SetDateQueryParamsForAggregation()
+    {
+        var from = (AggregateFrom ?? DateTime.MinValue).ToString("yyyyMMddHHmmss");
+        var to = (AggregateTo ?? DateTime.Today).ToString("yyyyMMddHHmmss");
+
+        DateFrom = from;
+        DateTo = to;
+
+        var url = NavigationManager.Uri;
+        NavigationManager.NavigateTo(url+$"?DateFrom={from}&DateTo={to}");
+        await GetData();
+    }
+    private async Task RemoveDateQueryParamsForAggregation()
+    {
+        DateFrom = null;
+        DateTo = null;
+        NavigationManager.NavigateTo($"/case/{CaseId}/capture/{CaptureId}");
+        await GetData();
+    }
+}

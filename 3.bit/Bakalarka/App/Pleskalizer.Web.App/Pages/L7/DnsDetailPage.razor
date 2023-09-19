@@ -1,0 +1,106 @@
+﻿@page "/dns/{CaseId:guid}/detail"
+@using IO.Swagger.Models
+@using System.Net
+@using Pleskalizer.Web.App.Extensions
+@using Pleskalizer.Web.App.Components.L7.Dns
+@using Blazored.LocalStorage
+@inject HttpClient Http
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime;
+
+<PageTitle>DNS - detail</PageTitle>
+
+@* ------------------------------------- Headline section ------------------------------------- *@
+<MudText Typo="Typo.h3" GutterBottom="true">DNS - detail</MudText>
+
+<MudText Typo="Typo.caption">Case ID: @CaseId</MudText>
+<br/>
+<MudText Typo="Typo.caption">Session ID: @DnsModel.SessionId</MudText>
+<br/>
+<MudText Typo="Typo.caption">Transaction ID: @DnsModel.TransactionId</MudText>
+
+<section class="my-5">
+
+    <MudText Typo="Typo.subtitle1"><b>Timestamp:</b>
+            @(new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(DnsModel.Timestamp ?? default(long)).ToLocalTime())
+        </MudText>
+    <MudText Typo="Typo.subtitle1"><b>Type:</b> @DnsModel.Type?.GetDisplayName()</MudText>
+    <MudText Typo="Typo.subtitle1"><b>Reply code:</b> @DnsModel.ReplyCode?.GetDisplayName() </MudText>
+</section>
+
+<section class="my-5">
+    <MudPaper Elevation="4" Class="py-8 px-10">
+        <MudText Typo="Typo.h6" class="mb-3">Flags</MudText>
+
+        <MudText Typo="Typo.subtitle1"><b>OpCode: </b> @DnsModel.Flags.OpCode?.GetDisplayName() </MudText>
+        <MudText Typo="Typo.subtitle1"><b>Authoritative: </b> @DnsModel.Flags.Authoritative </MudText>
+        <MudText Typo="Typo.subtitle1"><b>Truncated: </b> @DnsModel.Flags.Truncated </MudText>
+        <MudText Typo="Typo.subtitle1"><b>Recursion desired: </b> @DnsModel.Flags.RecursionDesired </MudText>
+        <MudText Typo="Typo.subtitle1"><b>Recursion available: </b> @DnsModel.Flags.RecursionAvailable </MudText>
+        <MudText Typo="Typo.subtitle1"><b>Answer authenticated: </b> @DnsModel.Flags.AnswerAuthenticated </MudText>
+        <MudText Typo="Typo.subtitle1"><b>Non authenticated data: </b> @DnsModel.Flags.NonAuthenticatedData </MudText>
+    </MudPaper>
+</section>
+
+@* ------------------------------------- Body section ------------------------------------- *@
+<section class="my-5">
+    <MudExpansionPanels MultiExpansion="true" Elevation="2">
+        <MudGrid>
+            <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                <MudExpansionPanel Text="Questions" IsInitiallyExpanded="true">
+                    <MudTable Items="DnsModel.Questions" FixedHeader="true" HorizontalScrollbar="true" Dense="true" Hover="true" Bordered="true" SortLabel="Sort By" Elevation="0">
+                        <HeaderContent>
+                            <MudTh>
+                                <MudTableSortLabel InitialDirection="SortDirection.Ascending" SortBy="new Func<DnsQuestion, object>(x => x.Type)">Type</MudTableSortLabel>
+                            </MudTh>
+                            <MudTh>
+                                <MudTableSortLabel SortBy="new Func<DnsQuestion, object>(x => x.Name)">Name</MudTableSortLabel>
+                            </MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Address A: ">@context.Type?.GetDisplayName()</MudTd>
+                            <MudTd DataLabel="Address B: ">@context.Name</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudExpansionPanel>
+            </MudItem>
+
+            <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                <MudExpansionPanel Text="Answers" IsInitiallyExpanded="true">
+                    <DnsResourceRecordTableComponent DnsRecourses="DnsModel.Answers"></DnsResourceRecordTableComponent>
+                </MudExpansionPanel>
+            </MudItem>
+
+            <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                <MudExpansionPanel Text="Authorities" IsInitiallyExpanded="true">
+                    <DnsResourceRecordTableComponent DnsRecourses="DnsModel.Authorities"></DnsResourceRecordTableComponent>
+                </MudExpansionPanel>
+            </MudItem>
+            <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                <MudExpansionPanel Text="Questions" IsInitiallyExpanded="true">
+                    <DnsResourceRecordTableComponent DnsRecourses="DnsModel.Additional"></DnsResourceRecordTableComponent>
+                </MudExpansionPanel>
+            </MudItem>
+
+        </MudGrid>
+    </MudExpansionPanels>
+</section>
+
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+
+    private DnsDTO DnsModel { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        DnsModel = await LocalStorage.GetItemAsync<DnsDTO>("DnsDTODetail");
+        await LocalStorage.RemoveItemAsync("DnsDTODetail");
+    }
+
+}

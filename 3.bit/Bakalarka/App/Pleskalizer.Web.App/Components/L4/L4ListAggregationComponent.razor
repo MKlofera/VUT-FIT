@@ -1,0 +1,386 @@
+﻿@using IO.Swagger.Models
+@using System.Net
+@using Pleskalizer.Web.App.Extensions
+@using Microsoft.AspNetCore.Components
+
+<MudGrid Class="d-flex align-center mb-3">
+    <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
+        <MudTextField @bind-Value="TypedIpAddress" Label="Type IP address" Variant="Variant.Text"></MudTextField>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="4" lg="4" xl="4">
+        <MudTextField @bind-Value="TypedPort" Label="Type port" Variant="Variant.Text"></MudTextField>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="4" lg="4" xl="4">
+        <MudButton @onclick="GetAggregatedMessages" Color="Color.Primary" Variant="Variant.Filled">Aggregate</MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (L7SearchingMessageList.Count > 0)
+{
+    <section>
+    <MudExpansionPanels MultiExpansion="true">
+    <MudExpansionPanel Text="@($"AddressA/B = {TypedIpAddress} | PortA/B = {TypedPort}")">
+        <MudDataGrid Items="@L7SearchingMessageList" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L4ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortA" Title="PortA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortB" Title="PortB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL4" Title="Protocol L4" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL4))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L4ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L7SearchingMessageList.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L4 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L7SearchingMessageList.Select(x => x.ProtocolL4.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L7SearchingMessageList.Select(x => x.AddressA).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L7SearchingMessageList.Select(x => x.AddressB).ToList()"/>
+                </MudItem>
+
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L7SearchingMessageList.Select(x => x.PortA.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="L7SearchingMessageList.Select(x => x.PortB.ToString()).ToList()"/>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="@($"AddressA = {TypedIpAddress}")">
+        <MudDataGrid Items="@AddressAIpSearchedMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L4ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortA" Title="PortA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortB" Title="PortB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL4" Title="Protocol L4" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL4))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L4ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressAIpSearchedMessages.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L4 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressAIpSearchedMessages.Select(x => x.ProtocolL4.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressAIpSearchedMessages.Select(x => x.AddressB).ToList()"/>
+                </MudItem>
+
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressAIpSearchedMessages.Select(x => x.PortA.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressAIpSearchedMessages.Select(x => x.PortB.ToString()).ToList()"/>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="@($"AddressB = {TypedIpAddress}")">
+
+        <MudDataGrid Items="@AddressBIpSearchedMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L4ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortA" Title="PortA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortB" Title="PortB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL4" Title="Protocol L4" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL4))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L4ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressBIpSearchedMessages.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L4 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressBIpSearchedMessages.Select(x => x.ProtocolL4.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressBIpSearchedMessages.Select(x => x.AddressA).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressBIpSearchedMessages.Select(x => x.PortA.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="AddressBIpSearchedMessages.Select(x => x.PortB.ToString()).ToList()"/>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="@($"PortA = {TypedPort}")">
+
+        <MudDataGrid Items="@PortASearchedMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L4ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortA" Title="PortA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortB" Title="PortB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL4" Title="Protocol L4" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL4))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L4ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortASearchedMessages.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L4 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortASearchedMessages.Select(x => x.ProtocolL4.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortASearchedMessages.Select(x => x.AddressA).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortASearchedMessages.Select(x => x.AddressB).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortASearchedMessages.Select(x => x.PortB.ToString()).ToList()"/>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    <MudExpansionPanel Text="@($"PortB = {TypedPort}")">
+
+
+        <MudDataGrid Items="@PortBSearchedMessages" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L4ConversationStatisticsListDTO item) => { SelectedItemChangedHandler(item); }">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortA" Title="PortA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.PortB" Title="PortB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.ProtocolL4" Title="Protocol L4" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL4))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+            <PagerContent>
+                <MudDataGridPager T="L4ConversationStatisticsListDTO"/>
+            </PagerContent>
+        </MudDataGrid>
+        <MudExpansionPanel Text="Graphs">
+            <MudGrid>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L3 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortBSearchedMessages.Select(x => x.ProtocolL3.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">Protocol L4 - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortBSearchedMessages.Select(x => x.ProtocolL4.ToString()).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortBSearchedMessages.Select(x => x.AddressA).ToList()"/>
+                </MudItem>
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">AddressB - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortBSearchedMessages.Select(x => x.AddressB).ToList()"/>
+                </MudItem>
+
+                <MudItem xs="12" sm="12" md="6" lg="6" xl="6">
+                    <MudText Typo="Typo.h6" Class="mx-auto">PortA - Most occurrences</MudText>
+                    <MostOccurrenceDonutChartComponent Data="PortBSearchedMessages.Select(x => x.PortA.ToString()).ToList()"/>
+                </MudItem>
+            </MudGrid>
+        </MudExpansionPanel>
+    </MudExpansionPanel>
+
+    </MudExpansionPanels>
+    </section>
+}
+else
+{
+    <MudText Typo="Typo.h4">No Results</MudText>
+}
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Parameter]
+    public List<L4ConversationStatisticsListDTO>? L4MessagesList { get; set; }
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private List<L4ConversationStatisticsListDTO> L7SearchingMessageList { get; set; } = new List<L4ConversationStatisticsListDTO>();
+
+    private List<L4ConversationStatisticsListDTO> AddressAIpSearchedMessages { get; set; } = new List<L4ConversationStatisticsListDTO>();
+    private List<L4ConversationStatisticsListDTO> AddressBIpSearchedMessages { get; set; } = new List<L4ConversationStatisticsListDTO>();
+    private List<L4ConversationStatisticsListDTO> PortASearchedMessages { get; set; } = new List<L4ConversationStatisticsListDTO>();
+    private List<L4ConversationStatisticsListDTO> PortBSearchedMessages { get; set; } = new List<L4ConversationStatisticsListDTO>();
+
+    private MudDataGrid<L4ConversationStatisticsListDTO> Table { get; set; } = null!;
+
+
+    private string TypedIpAddress { get; set; } = String.Empty;
+    private string TypedPort { get; set; } = String.Empty;
+
+    private void GetAggregatedMessages()
+    {
+        if (L4MessagesList == null) return;
+
+        L7SearchingMessageList = new List<L4ConversationStatisticsListDTO>();
+        AddressAIpSearchedMessages = new List<L4ConversationStatisticsListDTO>();
+        AddressBIpSearchedMessages = new List<L4ConversationStatisticsListDTO>();
+        PortASearchedMessages = new List<L4ConversationStatisticsListDTO>();
+        PortBSearchedMessages = new List<L4ConversationStatisticsListDTO>();
+
+        if (TypedIpAddress != String.Empty && TypedPort != String.Empty)
+        {
+            L7SearchingMessageList = L4MessagesList
+                .Where(x =>
+                    (x.AddressA == TypedIpAddress || x.AddressB == TypedIpAddress) &&
+                    (x.PortA == Int32.Parse(TypedPort) || x.PortB == Int32.Parse(TypedPort)))
+                .ToList();
+
+            AddressAIpSearchedMessages = L4MessagesList
+                .Where(x => x.AddressA == TypedIpAddress)
+                .ToList();
+
+            AddressBIpSearchedMessages = L4MessagesList
+                .Where(x => x.AddressB == TypedIpAddress)
+                .ToList();
+
+            PortASearchedMessages = L4MessagesList
+                .Where(x => x.PortA == Int32.Parse(TypedPort))
+                .ToList();
+
+            PortBSearchedMessages = L4MessagesList
+                .Where(x => x.PortB == Int32.Parse(TypedPort))
+                .ToList();
+        }
+        else if (TypedIpAddress == String.Empty && TypedPort != String.Empty)
+        {
+            L7SearchingMessageList = L4MessagesList
+                .Where(x => x.PortA == Int32.Parse(TypedPort) || x.PortB == Int32.Parse(TypedPort))
+                .ToList();
+
+            PortASearchedMessages = L4MessagesList
+                .Where(x => x.PortA == Int32.Parse(TypedPort))
+                .ToList();
+
+            PortBSearchedMessages = L4MessagesList
+                .Where(x => x.PortB == Int32.Parse(TypedPort))
+                .ToList();
+        }
+        else if (TypedIpAddress != String.Empty && TypedPort == String.Empty)
+        {
+            L7SearchingMessageList = L4MessagesList
+                .Where(x => x.AddressA == TypedIpAddress || x.AddressB == TypedIpAddress)
+                .ToList();
+
+            AddressAIpSearchedMessages = L4MessagesList
+                .Where(x => x.AddressA == TypedIpAddress)
+                .ToList();
+
+            AddressBIpSearchedMessages = L4MessagesList
+                .Where(x => x.AddressB == TypedIpAddress)
+                .ToList();
+        }
+        StateHasChanged();
+        Console.WriteLine("Lenght: " + L7SearchingMessageList.Count);
+    }
+
+    private async void SelectedItemChangedHandler(L4ConversationStatisticsListDTO item)
+    {
+        var url = $"/l4/{CaseId}/{item.CaptureId}?AddressA={item.AddressA}&AddressB={item.AddressB}&ProtocolL4={item.ProtocolL4}&PortA={item.PortA}&PortB={item.PortB}";
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private string GetEnumDisplayValue(Enum enumValue)
+    {
+        return enumValue.GetDisplayName();
+    }
+}

@@ -1,0 +1,239 @@
+﻿@page "/smtp-client/{CaseId:guid}/list"
+@using IO.Swagger.Models
+@using Pleskalizer.Web.App.Components.L7.Smtp
+@using Pleskalizer.Web.BL.Facades.L7
+@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components
+@using Pleskalizer.Web.App.Extensions
+
+<PageTitle>Smtp Client messages</PageTitle>
+
+<MudGrid Class="d-flex justify-space-between align-center mb-5">
+    <MudItem xs="12" sm="12" md="12" lg="6" xl="6">
+        <MudText Typo="Typo.h3" GutterBottom="true">SMTP Client</MudText>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="8" lg="4" xl="4">
+        <MudTextField @bind-Value="SearchSessionValue" Label="Search" Placeholder="search session" Variant="Variant.Text" FullWidth="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Search" AdornmentColor="Color.Primary"/>
+    </MudItem>
+    <MudItem xs="12" sm="12" md="4" lg="2" xl="2">
+        <MudButton @onclick="GetMessagesAsync" Variant="Variant.Filled" Color="Color.Primary">Search</MudButton>
+        <MudButton @onclick="CancelSessionSearchHandlerAsync" Variant="Variant.Filled" Color="Color.Error">Cancel</MudButton>
+    </MudItem>
+</MudGrid>
+
+@if (SmtpClientMessage is null)
+{
+    <MudProgressCircular Color="Color.Primary" Style="height:70px;width:70px;" Indeterminate="true"/>
+}
+
+else
+{
+    <section>
+        <MudGrid Class="my-2">
+            <MudItem>
+                <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled">Columns</MudButton>
+            </MudItem>
+        </MudGrid>
+
+        <MudDataGrid Items="@SmtpClientMessage.Items" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(SmtpClientMessageDTO item) => { SelectedItemChangedHandler(item); }" @ref="Table">
+            <Columns>
+                <PropertyColumn Property="x => new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc).AddSeconds(x.Envelope.DateTicks ?? default(long)).ToLocalTime()" Title="Sent on" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Envelope.Sender" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Envelope.AddressesFrom[0]" Title="First address From" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Envelope.AddressesFrom.Count" Title="Addresses from" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_addressesFromAggregation"/>
+                <PropertyColumn Property="x => x.Envelope.AddressesTo[0]" Title="First address To" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Envelope.AddressesTo.Count" Title="Addresses To" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_addressesToAggregation"/>
+                <PropertyColumn Property="x => x.Envelope.Cc.Count" Title="Cc" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_ccAggregation"/>
+                <PropertyColumn Property="x => x.Envelope.Bcc.Count" Title="Bcc" Hideable="true" ShowColumnOptions="true" AggregateDefinition="_bbcAggregation"/>
+                <PropertyColumn Property="x => x.Envelope.Subject" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Attachments.Count" Title="Attachments" AggregateDefinition="_attachmentsAggregation" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.Command" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.Command))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.SessionId" Title="Session ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+        </MudDataGrid>
+    </section>
+
+    <section class="my-2">
+        <Pagination @bind-PageSize="PageSize" @bind-PageState="PageState"></Pagination>
+    </section>
+
+    if (SmtpClientMessage.Items.Count > 0)
+    {
+        <section class="my-2">
+            <MudExpansionPanels Elevation="2">
+
+                <MudExpansionPanel Text="Malicious content" Class="my-2">
+                    <SmtpClientMaliciousMessagesComponent ClientMessages="SmtpClientMessage.Items" CaseId="CaseId"/>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="Aggregation" Class="my-2">
+                    <SmtpClientMessageAggregationComponent Data="SmtpClientMessage.Items" CaseId="CaseId"/>
+                </MudExpansionPanel>
+
+                <MudExpansionPanel Text="Charts" Class="my-2">
+                    <SmtpClientMessageChartsComponent Data="SmtpClientMessage.Items"/>
+                </MudExpansionPanel>
+
+            </MudExpansionPanels>
+        </section>
+    }
+}
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private SmtpFacade SmtpFacade { get; set; } = null!;
+
+    [Inject]
+    private ILocalStorageService LocalStorage { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private SmtpClientMessageDTOPageQueryResultDTO? SmtpClientMessage { get; set; }
+
+    private MudDataGrid<SmtpClientMessageDTO> Table { get; set; } = null!;
+
+    private string SearchSessionValue { get; set; } = String.Empty;
+
+    private int _pageSize = 20;
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    private int _pageState;
+
+    private int PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessagesAsync();
+    }
+
+    private async Task GetMessagesAsync()
+    {
+        if (SearchSessionValue == String.Empty)
+        {
+            byte[] pageState = IntToByteArr(PageState);
+            SmtpClientMessage = await SmtpFacade.GetAllClientMessages(CaseId, pageState, PageSize);
+            StateHasChanged();
+        }
+        else
+        {
+            await GetSessionResultsAsync();
+        }
+    }
+
+    private async Task GetSessionResultsAsync()
+    {
+        byte[] pageState = IntToByteArr(PageState);
+        SmtpClientMessage = await SmtpFacade.GetAllClientMessagesWithSession(CaseId, Guid.Parse(SearchSessionValue), pageState, PageSize);
+        StateHasChanged();
+    }
+
+    private async Task CancelSessionSearchHandlerAsync()
+    {
+        SearchSessionValue = String.Empty;
+        await GetMessagesAsync();
+    }
+
+    private async void SelectedItemChangedHandler(SmtpClientMessageDTO item)
+    {
+        var url = $"/smtp-client/{CaseId}/detail";
+        await LocalStorage.SetItemAsync("SmtpClientMessageDTODetail", item);
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+
+    private string GetEnumDisplayValue(Enum enumValue)
+    {
+        return enumValue.GetDisplayName();
+    }
+
+    private byte[] IntToByteArr(int number)
+    {
+        return BitConverter.GetBytes(number);
+    }
+
+    readonly AggregateDefinition<SmtpClientMessageDTO> _attachmentsAggregation = new AggregateDefinition<SmtpClientMessageDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Attachments.Count)), 2);
+            var min = x.Min(z => z.Attachments.Count);
+            var max = x.Max(z => z.Attachments.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    readonly AggregateDefinition<SmtpClientMessageDTO> _bbcAggregation = new AggregateDefinition<SmtpClientMessageDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Envelope.Bcc.Count)), 2);
+            var min = x.Min(z => z.Envelope.Bcc.Count);
+            var max = x.Max(z => z.Envelope.Bcc.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    readonly AggregateDefinition<SmtpClientMessageDTO> _ccAggregation = new AggregateDefinition<SmtpClientMessageDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Envelope.Cc.Count)), 2);
+            var min = x.Min(z => z.Envelope.Cc.Count);
+            var max = x.Max(z => z.Envelope.Cc.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    readonly AggregateDefinition<SmtpClientMessageDTO> _addressesToAggregation = new AggregateDefinition<SmtpClientMessageDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Envelope.AddressesTo.Count)), 2);
+            var min = x.Min(z => z.Envelope.AddressesTo.Count);
+            var max = x.Max(z => z.Envelope.AddressesTo.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+    readonly AggregateDefinition<SmtpClientMessageDTO> _addressesFromAggregation = new AggregateDefinition<SmtpClientMessageDTO>
+    {
+        Type = AggregateType.Custom,
+        CustomAggregate = x =>
+        {
+            var average = Math.Round((x.Average(z => z.Envelope.AddressesFrom.Count)), 2);
+            var min = x.Min(z => z.Envelope.AddressesFrom.Count);
+            var max = x.Max(z => z.Envelope.AddressesFrom.Count);
+            return $"Average: {average} | Min: {min} | Max: {max}";
+        }
+    };
+
+}

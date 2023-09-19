@@ -1,0 +1,74 @@
+﻿<div>
+    <MudChart ChartType="ChartType.Bar" ChartSeries="@TimelineData" XAxisLabels="@TimelineLabels" Width="100%" Height="400px"></MudChart>
+</div>
+@code {
+
+    [Parameter] 
+    public List<long>? Data { get; set; }
+    
+    public List<ChartSeries> TimelineData = new List<ChartSeries>();
+    public string[] TimelineLabels = new string[9];
+    
+    protected override void OnParametersSet()
+    {
+        if (Data is null || Data.Count == 0) return;
+        SetTimeLineData();
+    }
+    private void SetTimeLineData()
+    {
+        TimelineData = new List<ChartSeries>();
+
+        var oneNinth = Data!.Min();
+        var nineNinths = Data!.Max();
+
+        double range = nineNinths - oneNinth;
+        var twoNinths = (oneNinth + (range * 0.125));
+        var threeNinths = (oneNinth + (range * 0.250));
+        var forNinths = (oneNinth + (range * 0.375));
+        var fiveNinths = (oneNinth + (range * 0.5));
+        var sixNinths = (oneNinth + (range * 0.625));
+        var sevenNinths = (oneNinth + (range * 0.75));
+        var eightNinths = (oneNinth + (range * 0.875));
+        
+        TimelineLabels[0] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(oneNinth).ToString("yyyy-M-d");
+        TimelineLabels[1] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(twoNinths).ToString("yyyy-M-d");
+        TimelineLabels[2] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(threeNinths).ToString("yyyy-M-d");
+        TimelineLabels[3] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(forNinths).ToString("yyyy-M-d");
+        TimelineLabels[4] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(fiveNinths).ToString("yyyy-M-d");
+        TimelineLabels[5] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(sixNinths).ToString("yyyy-M-d");
+        TimelineLabels[6] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(sevenNinths).ToString("yyyy-M-d");
+        TimelineLabels[7] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(eightNinths).ToString("yyyy-M-d");
+        TimelineLabels[8] = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(nineNinths).ToString("yyyy-M-d");
+        
+            TimelineData.Add(new ChartSeries()
+            {
+                Name = "In range", Data = new double[]
+                {
+                    0,
+                    Data.Count(x => x >= oneNinth && x <= twoNinths),
+                    Data.Count(x => x > twoNinths && x <= threeNinths),
+                    Data.Count(x => x > threeNinths && x <= forNinths),
+                    Data.Count(x => x > forNinths && x <= fiveNinths),
+                    Data.Count(x => x > fiveNinths && x <= sixNinths),
+                    Data.Count(x => x > sixNinths && x <= sevenNinths),
+                    Data.Count(x => x > sevenNinths && x <= eightNinths),
+                    Data.Count(x => x > eightNinths && x <= nineNinths),
+                }
+            });
+            TimelineData.Add(new ChartSeries()
+            {
+                Name = "From first date", Data = new double[]
+                {
+                    0,
+                    Data.Count(x => x <= twoNinths),
+                    Data.Count(x => x <= threeNinths),
+                    Data.Count(x => x <= forNinths),
+                    Data.Count(x => x <= fiveNinths),
+                    Data.Count(x => x <= sixNinths),
+                    Data.Count(x => x <= sevenNinths),
+                    Data.Count(x => x <= eightNinths),
+                    Data.Count(x => x <= nineNinths),
+                }
+            });
+    }
+}

@@ -1,0 +1,127 @@
+﻿@page "/l3/{CaseId:guid}/list"
+@using Pleskalizer.Web.BL.Facades.L3
+@using Pleskalizer.Web.App.Extensions
+@using Pleskalizer.Web.App.Components.L3
+@using IO.Swagger.Models
+@using Microsoft.AspNetCore.Components
+
+<PageTitle>L3 Conversation</PageTitle>
+
+<section>
+    <MudText Typo="Typo.h3" GutterBottom="true">L3 Conversation</MudText>
+</section>
+
+@if (L3Data is null)
+{
+    <MudProgressCircular Color="Color.Default" Indeterminate="true"/>
+}
+else
+{
+    <section>
+        <MudGrid>
+            <MudItem>
+                <MudButton @onclick="() => Table.ShowColumnsPanel()" Color="Color.Primary" Variant="Variant.Filled">Columns</MudButton>
+            </MudItem>
+        </MudGrid>
+    
+        <MudDataGrid Items="@L3Data.Items" Dense="true" Striped="true" Hover="true" Bordered="true" HorizontalScrollbar="true" Groupable="true" Filterable="true" SelectedItemChanged="(L3ConversationStatisticsListDTO item) => { SelectedItemChangedHandlerAsync(item); }" @ref="Table">
+            <Columns>
+                <PropertyColumn Property="x => x.AddressA" Title="AddressA" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.AddressB" Title="AddressB" Hideable="true" ShowColumnOptions="true"/>
+                <PropertyColumn Property="x => x.ProtocolL3" Title="Protocol L3" Hideable="true" ShowColumnOptions="true">
+                    <CellTemplate>
+                        @(GetEnumDisplayValue(context.Item.ProtocolL3))
+                    </CellTemplate>
+                </PropertyColumn>
+                <PropertyColumn Property="x => x.CaptureId" Title="Capture ID" Hideable="true" ShowColumnOptions="true"/>
+            </Columns>
+        </MudDataGrid>
+    </section>
+    
+    <section class="my-2">
+        <Pagination @bind-PageSize="PageSize" @bind-PageState="PageState"></Pagination>
+    </section>
+    
+    if (L3Data.Items.Count > 0)
+    {
+        <section>
+            <MudExpansionPanels MultiExpansion="true" Elevation="2">
+                <MudExpansionPanel Text="Aggregation" Class="my-2">
+                    <L3ListAggregationComponent CaseId="CaseId" L3MessagesList="L3Data.Items"/>
+                </MudExpansionPanel>
+                <MudExpansionPanel Text="Graphs" Class="my-2">
+                    <L3ListChartComponent L3MessagesList="L3Data.Items" />
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </section>
+    }
+}
+
+
+@code {
+
+    [Parameter]
+    public Guid CaseId { get; set; }
+
+    [Inject]
+    private L3Facade L3Facade { get; set; } = null!;
+
+    [Inject]
+    private IJSRuntime JsRuntime { get; set; } = null!;
+
+    private L3ConversationStatisticsListDTOPageQueryResultDTO? L3Data { get; set; }
+    private MudDataGrid<L3ConversationStatisticsListDTO> Table { get; set; } = null!;
+
+    private int _pageSize = 20;
+
+    private int PageSize
+    {
+        get => _pageSize;
+        set
+        {
+            _pageSize = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    private int _pageState;
+
+    private int PageState
+    {
+        get => _pageState;
+        set
+        {
+            _pageState = value;
+            _ = GetMessagesAsync();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetMessagesAsync();
+    }
+
+    private async Task GetMessagesAsync()
+    {
+        byte[] pageState = IntToByteArr(PageState);
+        L3Data = await L3Facade.GetAll(CaseId, pageState, PageSize);
+        StateHasChanged();
+    }
+
+    private async void SelectedItemChangedHandlerAsync(L3ConversationStatisticsListDTO item)
+    {
+        var url = $"/l3/{CaseId}/{item.CaptureId}?AddressA={item.AddressA}&AddressB={item.AddressB}";
+        await JsRuntime.InvokeVoidAsync("open", url, "_blank");
+    }
+    
+    private string GetEnumDisplayValue(Enum enumValue)
+    {
+        return enumValue.GetDisplayName();
+    }
+
+    private byte[] IntToByteArr(int number)
+    {
+        return BitConverter.GetBytes(number);
+    }
+
+}

@@ -1,0 +1,229 @@
+﻿@using IO.Swagger.Models
+
+<MudText Typo="Typo.h6" Class="mx-auto">Content-Types</MudText>
+        <MudPaper Class="pa-4 m-2">
+
+            <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="300px" Height="300px" InputData="@_contentTypeData" InputLabels="@_contentTypeLabels">
+                <CustomGraphics>
+                    <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                    <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_contentTypeData.Sum().ToString()</text>
+                </CustomGraphics>
+            </MudChart>
+            <MudExpansionPanels MultiExpansion="true">
+                <MudExpansionPanel Text="Details">
+                    <MudExpansionPanel Text="text/">
+                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_contentTypeTextData" InputLabels="@_contentTypeTextLabels">
+                            <CustomGraphics>
+                                <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                                <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_contentTypeTextData.Sum().ToString()</text>
+                            </CustomGraphics>
+                        </MudChart>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel Text="application/">
+                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_contentTypeApplicationData" InputLabels="@_contentTypeApplicationLabels">
+                            <CustomGraphics>
+                                <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                                <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_contentTypeApplicationData.Sum().ToString()</text>
+                            </CustomGraphics>
+                        </MudChart>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel Text="image/">
+                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_contentTypeImageData" InputLabels="@_contentTypeImageLabels">
+                            <CustomGraphics>
+                                <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                                <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_contentTypeImageData.Sum().ToString()</text>
+                            </CustomGraphics>
+                        </MudChart>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel Text="multipart/">
+                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_contentTypeMultipartData" InputLabels="@_contentTypeMultipartLabels">
+                            <CustomGraphics>
+                                <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                                <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_contentTypeMultipartData.Sum().ToString()</text>
+                            </CustomGraphics>
+                        </MudChart>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel Text="audio/">
+                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_contentTypeAudioData" InputLabels="@_contentTypeAudioLabels">
+                            <CustomGraphics>
+                                <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                                <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_contentTypeAudioData.Sum().ToString()</text>
+                            </CustomGraphics>
+                        </MudChart>
+                    </MudExpansionPanel>
+                    <MudExpansionPanel Text="video/">
+                        <MudChart ChartType="ChartType.Donut" LegendPosition="Position.Right" Width="180px" Height="180px" InputData="@_contentTypeVideoData" InputLabels="@_contentTypeVideoLabels">
+                            <CustomGraphics>
+                                <text class="donut-inner-text" x="50%" y="40%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="3">Total</text>
+                                <text class="donut-inner-text" x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="black" font-family="Helvetica" font-size="6">@_contentTypeVideoData.Sum().ToString()</text>
+                            </CustomGraphics>
+                        </MudChart>
+                    </MudExpansionPanel>
+                </MudExpansionPanel>
+            </MudExpansionPanels>
+        </MudPaper>
+
+
+
+
+@code {
+    [Parameter]
+    public ICollection<HttpHeaderDTO>? Data { get; set; } = null;
+    
+    
+    private double[] _contentTypeData = new double[6];
+    private string[] _contentTypeLabels = new string[6];
+
+    private double[] _contentTypeTextData = new double[6];
+    private string[] _contentTypeTextLabels = new string[6];
+
+    private double[] _contentTypeApplicationData = new double[6];
+    private string[] _contentTypeApplicationLabels = new string[6];
+
+    private double[] _contentTypeImageData = new double[6];
+    private string[] _contentTypeImageLabels = new string[6];
+
+    private double[] _contentTypeMultipartData = new double[6];
+    private string[] _contentTypeMultipartLabels = new string[6];
+
+    private double[] _contentTypeAudioData = new double[6];
+    private string[] _contentTypeAudioLabels = new string[6];
+
+    private double[] _contentTypeVideoData = new double[6];
+    private string[] _contentTypeVideoLabels = new string[6];
+    
+    protected override void OnParametersSet()
+    {
+        if (Data is null) return;
+
+        SetContentTypeData();
+        SetContentTypeTextData();
+        SetContentTypeApplicationData();
+        SetContentTypeImageData();
+        SetContentTypeMultipartData();
+        SetContentTypeAudioData();
+        SetContentTypeVideoData();
+        
+    }
+    
+    private void SetContentTypeData()
+    {
+        _contentTypeData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value.StartsWith("text/"));
+        _contentTypeData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value.StartsWith("text/"));
+        _contentTypeData[1] = Data.Count(y => y.Name == "Content-Type" && y.Value.StartsWith("application/"));
+        _contentTypeData[2] = Data.Count(y => y.Name == "Content-Type" && y.Value.StartsWith("image/"));
+        _contentTypeData[3] = Data.Count(y => y.Name == "Content-Type" && y.Value.StartsWith("multipart/"));
+        _contentTypeData[4] = Data.Count(y => y.Name == "Content-Type" && y.Value.StartsWith("audio/"));
+        _contentTypeData[5] = Data.Count(y => y.Name == "Content-Type" && y.Value.StartsWith("video/"));
+
+        _contentTypeLabels[0] = $"{_contentTypeData[0]} - text/";
+        _contentTypeLabels[1] = $"{_contentTypeData[1]} - application/";
+        _contentTypeLabels[2] = $"{_contentTypeData[2]} - image/";
+        _contentTypeLabels[3] = $"{_contentTypeData[3]} - multipart/";
+        _contentTypeLabels[4] = $"{_contentTypeData[4]} - audio/";
+        _contentTypeLabels[5] = $"{_contentTypeData[5]} - video/";
+    }
+
+    private void SetContentTypeTextData()
+    {
+        _contentTypeTextData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value == "text/plain");
+        _contentTypeTextData[1] = Data.Count(y => y.Name == "Content-Type" && y.Value == "text/html");
+        _contentTypeTextData[2] = Data.Count(y => y.Name == "Content-Type" && y.Value == "text/css");
+        _contentTypeTextData[3] = Data.Count(y => y.Name == "Content-Type" && y.Value == "text/javascript");
+        _contentTypeTextData[4] = Data.Count(y => y.Name == "Content-Type" && y.Value == "text/xml");
+        _contentTypeTextData[5] = Data.Count(y => y.Name == "Content-Type" && y.Value == "text/markdown");
+
+        _contentTypeTextLabels[0] = $"{_contentTypeTextData[0]} - text/plain";
+        _contentTypeTextLabels[1] = $"{_contentTypeTextData[1]} - text/html";
+        _contentTypeTextLabels[2] = $"{_contentTypeTextData[2]} - text/css";
+        _contentTypeTextLabels[3] = $"{_contentTypeTextData[3]} - text/javascript";
+        _contentTypeTextLabels[4] = $"{_contentTypeTextData[4]} - text/xml";
+        _contentTypeTextLabels[5] = $"{_contentTypeTextData[5]} - text/markdown";
+    }
+
+    private void SetContentTypeApplicationData()
+    {
+        _contentTypeApplicationData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value == "application/json");
+        _contentTypeApplicationData[1] = Data.Count(y => y.Name == "Content-Type" && y.Value == "application/xml");
+        _contentTypeApplicationData[2] = Data.Count(y => y.Name == "Content-Type" && y.Value == "application/pdf");
+        _contentTypeApplicationData[3] = Data.Count(y => y.Name == "Content-Type" && y.Value == "application/octet-stream");
+        _contentTypeApplicationData[4] = Data.Count(y => y.Name == "Content-Type" && y.Value == "application/zip");
+        _contentTypeApplicationData[5] = Data.Count(y => y.Name == "Content-Type" && y.Value == "application/vnd.ms-excel");
+
+
+        _contentTypeApplicationLabels[0] = $"{_contentTypeApplicationData[0]} - application/json";
+        _contentTypeApplicationLabels[1] = $"{_contentTypeApplicationData[1]} - application/xml";
+        _contentTypeApplicationLabels[2] = $"{_contentTypeApplicationData[2]} - application/pdf";
+        _contentTypeApplicationLabels[3] = $"{_contentTypeApplicationData[3]} - application/octet-stream";
+        _contentTypeApplicationLabels[4] = $"{_contentTypeApplicationData[4]} - application/zip";
+        _contentTypeApplicationLabels[5] = $"{_contentTypeApplicationData[5]} - application/vnd.ms-excel";
+    }
+
+    private void SetContentTypeImageData()
+    {
+        _contentTypeImageData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value == "image/jpeg");
+        _contentTypeImageData[1] = Data.Count(y => y.Name == "Content-Type" && y.Value == "image/png");
+        _contentTypeImageData[2] = Data.Count(y => y.Name == "Content-Type" && y.Value == "image/gif");
+        _contentTypeImageData[3] = Data.Count(y => y.Name == "Content-Type" && y.Value == "image/svg-xml");
+        _contentTypeImageData[4] = Data.Count(y => y.Name == "Content-Type" && y.Value == "image/webp");
+        _contentTypeImageData[5] = Data.Count(y => y.Name == "Content-Type" && y.Value == "image/bmp");
+
+        _contentTypeImageLabels[0] = $"{_contentTypeImageData[0]} - image/jpeg";
+        _contentTypeImageLabels[1] = $"{_contentTypeImageData[1]} - image/png";
+        _contentTypeImageLabels[2] = $"{_contentTypeImageData[2]} - image/gif";
+        _contentTypeImageLabels[3] = $"{_contentTypeImageData[3]} - image/svg-xml";
+        _contentTypeImageLabels[4] = $"{_contentTypeImageData[4]} - image/webp";
+        _contentTypeImageLabels[5] = $"{_contentTypeImageData[5]} - image/bmp";
+    }
+
+    private void SetContentTypeMultipartData()
+    {
+        _contentTypeMultipartData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value == "multipart/form-data");
+        _contentTypeMultipartData[1] = Data.Count(y => y.Name == "Content-Type" && y.Value == "multipart/byteranges");
+        _contentTypeMultipartData[2] = Data.Count(y => y.Name == "Content-Type" && y.Value == "multipart/related");
+        _contentTypeMultipartData[3] = Data.Count(y => y.Name == "Content-Type" && y.Value == "multipart/mixed");
+        _contentTypeMultipartData[4] = Data.Count(y => y.Name == "Content-Type" && y.Value == "multipart/alternative");
+        _contentTypeMultipartData[5] = Data.Count(y => y.Name == "Content-Type" && y.Value == "multipart/signed");
+
+        _contentTypeMultipartLabels[0] = $"{_contentTypeMultipartData[0]} - multipart/form-data";
+        _contentTypeMultipartLabels[1] = $"{_contentTypeMultipartData[1]} - multipart/byteranges";
+        _contentTypeMultipartLabels[2] = $"{_contentTypeMultipartData[2]} - multipart/related";
+        _contentTypeMultipartLabels[3] = $"{_contentTypeMultipartData[3]} - multipart/mixed";
+        _contentTypeMultipartLabels[4] = $"{_contentTypeMultipartData[4]} - multipart/alternative";
+        _contentTypeMultipartLabels[5] = $"{_contentTypeMultipartData[5]} - multipart/signed";
+    }
+
+    private void SetContentTypeAudioData()
+    {
+        _contentTypeAudioData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value == "audio/mpeg");
+        _contentTypeAudioData[1] = Data.Count(y => y.Name == "Content-Type" && y.Value == "audio/wav");
+        _contentTypeAudioData[2] = Data.Count(y => y.Name == "Content-Type" && y.Value == "audio/ogg");
+        _contentTypeAudioData[3] = Data.Count(y => y.Name == "Content-Type" && y.Value == "audio/flac");
+        _contentTypeAudioData[4] = Data.Count(y => y.Name == "Content-Type" && y.Value == "audio/mp4");
+        _contentTypeAudioData[5] = Data.Count(y => y.Name == "Content-Type" && y.Value == "audio/aac");
+
+        _contentTypeAudioLabels[0] = $"{_contentTypeAudioData[0]} - audio/mpeg";
+        _contentTypeAudioLabels[1] = $"{_contentTypeAudioData[1]} - audio/wav";
+        _contentTypeAudioLabels[2] = $"{_contentTypeAudioData[2]} - audio/ogg";
+        _contentTypeAudioLabels[3] = $"{_contentTypeAudioData[3]} - audio/flac";
+        _contentTypeAudioLabels[4] = $"{_contentTypeAudioData[4]} - audio/mp4";
+        _contentTypeAudioLabels[5] = $"{_contentTypeAudioData[5]} - audio/aac";
+    }
+
+    private void SetContentTypeVideoData()
+    {
+        _contentTypeVideoData[0] = Data.Count(y => y.Name == "Content-Type" && y.Value == "video/mp4");
+        _contentTypeVideoData[1] = Data.Count(y => y.Name == "Content-Type" && y.Value == "video/mpeg");
+        _contentTypeVideoData[2] = Data.Count(y => y.Name == "Content-Type" && y.Value == "video/avi");
+        _contentTypeVideoData[3] = Data.Count(y => y.Name == "Content-Type" && y.Value == "video/webm");
+        _contentTypeVideoData[4] = Data.Count(y => y.Name == "Content-Type" && y.Value == "video/quicktime");
+        _contentTypeVideoData[5] = Data.Count(y => y.Name == "Content-Type" && y.Value == "video/x-ms-wmv");
+
+        _contentTypeVideoLabels[0] = $"{_contentTypeVideoData[0]} - video/mp4";
+        _contentTypeVideoLabels[1] = $"{_contentTypeVideoData[1]} - video/mpeg";
+        _contentTypeVideoLabels[2] = $"{_contentTypeVideoData[2]} - video/avi";
+        _contentTypeVideoLabels[3] = $"{_contentTypeVideoData[3]} - video/webm";
+        _contentTypeVideoLabels[4] = $"{_contentTypeVideoData[4]} - video/quicktime";
+        _contentTypeVideoLabels[5] = $"{_contentTypeVideoData[5]} - video/x-ms-wmv";
+    }
+}
